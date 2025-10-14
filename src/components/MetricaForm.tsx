@@ -9,7 +9,6 @@ import { setFeedback } from '../redux/slices/feedBackSlice';
 import { addMetrica, replaceMetrica, setCreatingMetrica, setEditingMetrica } from '../redux/slices/metricasTableSlice';
 import { BaseButton } from './shared/Button';
 import { BaseCancelButton } from './shared/BaseCancelButton';
-import { set } from 'lodash';
 
 // export interface Metrica {
 //   id: number;
@@ -22,8 +21,7 @@ import { set } from 'lodash';
 
 
 const MetricaForm = () => {
-    const dispatch = useDispatch();
-    const user = useSelector((state: RootState) => state.user.user);
+  const dispatch = useDispatch();
     const [formData, setFormData] = useState<Partial<Metrica>>({});
     const {creatingMetrica, editingMetrica } = useSelector((state: RootState) => state.metricasTable);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,8 +97,13 @@ const MetricaForm = () => {
     };
 
     useEffect(() => {
-      fetchMetrica();
-    }, [editingMetrica]);
+      if (creatingMetrica) {
+        // Reset form data when creating new metric
+        setFormData({});
+      } else {
+        fetchMetrica();
+      }
+    }, [editingMetrica, creatingMetrica]);
 
 
   return (
@@ -108,7 +111,7 @@ const MetricaForm = () => {
       {fields.map((field) => (
         <Box key={field.name}>
           <Input
-            value={String(formData[field.name as keyof Metrica])}
+            value={String(formData[field.name as keyof Metrica] || "")}
             name={field.name}
             onChange={handleChange}
             label={field.label}
@@ -124,6 +127,7 @@ const MetricaForm = () => {
         )}
         <BaseCancelButton
           onClick={() => {
+            setFormData({}); // Reset form data
             if (creatingMetrica) {
               dispatch(setCreatingMetrica(false));
               return;
