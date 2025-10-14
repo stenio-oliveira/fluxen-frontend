@@ -20,9 +20,17 @@ class UsuarioService {
     return response.data;
   }
 
-  static async getClienteByEquipamentoId(id: number): Promise<Usuario> {
-    const response = await api.get(`${this.endpoint}/equipamentos/${id}`);
-    return response.data;
+  static async getClienteByEquipamentoId(id: number): Promise<Usuario | null> {
+    try {
+      const response = await api.get(`${this.endpoint}/equipamentos/${id}`);
+      return response.data;
+    } catch (error: any) {
+      // Se retornar 404 ou erro, significa que não há cliente associado
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   static async createUsuario(data: Partial<Usuario>): Promise<Usuario> {

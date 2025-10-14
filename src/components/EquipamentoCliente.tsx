@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import { useParams } from "react-router-dom";
 import EquipamentoService from "../services/equipamentoService";
@@ -56,10 +56,12 @@ const EquipamentoCliente = () => {
   const fetchData = useCallback(async () => {
     try {
       const client = await UsuarioService.getClienteByEquipamentoId(Number(id));
-      setClientInfo(client);
+      setClientInfo(client || {});
       console.log(client);
     } catch (error) {
-      console.error("Erro ao buscar equipamentos:", error);
+      console.error("Erro ao buscar cliente:", error);
+      // Se não houver cliente associado, define como objeto vazio
+      setClientInfo({});
     }
   }, [id]);
 
@@ -70,25 +72,68 @@ const EquipamentoCliente = () => {
   return (
     <Card
       variant="outlined"
-      sx={{ maxWidth: 400, boxShadow: "none", position: "relative" }}
+      sx={{
+        maxWidth: 400,
+        boxShadow: "none",
+        position: "relative",
+        borderRadius: 2,
+        border: "1px solid #e0e0e0"
+      }}
     >
-      <CardContent className="bg-gray-50">
-        {/* Nome da empresa */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-          {/* {clienteInfo.empresa} */}
-        </Typography>
-
-        {/* Demais campos */}
-        {fields.map((field, index) => (
-          <Box key={field.label}>
-            <Typography component="span" fontWeight="bold">
-              {field.label}:
+      <CardContent sx={{ p: 2 }}>
+        {/* Verifica se há cliente associado */}
+        {clienteInfo.id ? (
+          /* Demais campos */
+          fields.map((field) => (
+            <Box key={field.label} sx={{ mb: 1.5 }}>
+              <Typography
+                component="span"
+                fontWeight="600"
+                sx={{
+                  color: "primary.main",
+                  fontSize: "0.875rem",
+                  display: "block",
+                  mb: 0.5
+                }}
+              >
+                {field.label}:
+              </Typography>
+              <Typography
+                component="span"
+                sx={{
+                  color: "text.primary",
+                  fontSize: "0.9rem",
+                  fontWeight: "500"
+                }}
+              >
+                {field.value || "Não informado"}
+              </Typography>
+            </Box>
+          ))
+        ) : (
+          /* Estado sem cliente associado */
+          <Box sx={{ textAlign: "center", py: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                fontStyle: "italic",
+                mb: 1
+              }}
+            >
+              Nenhum cliente associado
             </Typography>
-            <Typography component="span" sx={{ ml: 1 }}>
-              {field.value}
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.75rem"
+                }}
+              >
+                Clique no ícone de editar para associar um cliente
             </Typography>
           </Box>
-        ))}
+        )}
       </CardContent>
 
       <BaseIconButton onClick={() => setEditingClient(true)} sx={{ position: "absolute", top: 4, right: 4 }}>

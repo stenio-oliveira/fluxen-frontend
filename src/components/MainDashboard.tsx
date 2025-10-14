@@ -42,15 +42,15 @@ const Dashboard = () => {
       sx={{
         flexGrow: 1,
         p: { xs: 2, md: 4 },
-        
         height: '100vh',
         marginLeft: sideMenuOpen ? sideMenuWidth : "0",
+        bgcolor: "grey.50",
       }}
     >
       <Typography
-        variant="h4"
+        variant="h5"
         fontWeight="bold"
-        sx={{ mb: 4, textAlign: "center", color: 'primary.main' }}
+        sx={{ mb: 3, textAlign: "center", color: 'primary.main' }}
       >
         Dashboard de Gestão
       </Typography>
@@ -60,16 +60,17 @@ const Dashboard = () => {
           <Grid size={{ xs: 12, md: 4 }} key={index}>
             <Card
               sx={{
-                height: "200px",
-                boxShadow: 3,
+                height: "180px",
+                boxShadow: 2,
                 transition: "transform 0.3s",
                 border: "1px solid lightgray",
+                borderRadius: 2,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
                 "&:hover": {
-                  transform: "translateY(-6px)",
-                  boxShadow: 6,
+                  transform: "translateY(-4px)",
+                  boxShadow: 4,
                   cursor: "pointer",
                 },
               }}
@@ -78,14 +79,14 @@ const Dashboard = () => {
                 console.log("Rota:", item.route);
               }}
             >
-              <CardContent sx={{ textAlign: "center", flexGrow: 1 }}>
+              <CardContent sx={{ textAlign: "center", flexGrow: 1, p: 2 }}>
                 {item.icon}
-                <Typography variant="h6" sx={{ mt: 1, fontWeight: "bold" }}>
+                <Typography variant="h6" sx={{ mt: 1, fontWeight: "bold", color: "primary.main" }}>
                   {item.title}
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ mt: 1, color: "text.secondary" }}
+                  sx={{ mt: 1, color: "text.secondary", fontSize: "0.875rem" }}
                 >
                   {item.description}
                 </Typography>

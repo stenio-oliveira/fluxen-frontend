@@ -1,20 +1,8 @@
-import { useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal } from "react";
 import {
   Box,
   Button,
   Card,
-  CardContent,
-  CardHeader,
-  CardActions,
-  CardMedia,
   Typography,
-  TextField,
-  Select,
-  MenuItem,
-  Chip,
-  Divider,
-  IconButton,
-  Grid,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EquipamentoForm from "../components/EquipamentoForm";
@@ -34,20 +22,21 @@ const EquipamentoDetail = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", p: 4, width: "90vw" }}>
       <Box sx={{ maxWidth: 900, mx: "auto" }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
           <Button
             onClick={() => navigate(-1)}
             variant="outlined"
             startIcon={<ArrowBackIcon />}
+            size="small"
           >
             Voltar
           </Button>
           <Box>
-            <Typography variant="h4" color="primary" fontWeight="bold">
+            <Typography variant="h5" color="primary" fontWeight="bold">
               Detalhes do Equipamento
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Gerencie as informações, métricas e cliente do equipamento
+              Gerencie informações, métricas e cliente
             </Typography>
           </Box>
         </Box>
@@ -56,18 +45,17 @@ const EquipamentoDetail = () => {
         <Card
           elevation={1}
           sx={{
-            mb: 4,
+            mb: 3,
             padding: 2,
             display: "flex",
             flexDirection: "column",
             gap: 2,
             boxShadow: "none",
             border: "1px solid lightgray",
-            overflow: 'auto',
-           
+            borderRadius: 2,
           }}
         >
-          <Typography sx={{ color: "primary.main", fontWeight: "bold" }}>
+          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
             📝 Informações do Equipamento
           </Typography>
           <EquipamentoForm />
@@ -77,17 +65,17 @@ const EquipamentoDetail = () => {
         <Card
           elevation={1}
           sx={{
-            mb: 4,
+            mb: 3,
             padding: 2,
             display: "flex",
             flexDirection: "column",
             gap: 2,
             boxShadow: "none",
             border: "1px solid lightgray",
+            borderRadius: 2,
           }}
         >
-          {" "}
-          <Typography sx={{ color: "primary.main", fontWeight: "bold" }}>
+          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
             👤 Cliente Associado
           </Typography>
           <EquipamentoCliente />
@@ -95,14 +83,20 @@ const EquipamentoDetail = () => {
 
         {/* Métricas Associadas */}
         <Card
+          elevation={1}
           sx={{
-            padding: 1,
+            padding: 2,
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            overflow: "auto",
+            boxShadow: "none",
+            border: "1px solid lightgray",
+            borderRadius: 2,
           }}
         >
+          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
+            📊 Métricas Associadas
+          </Typography>
           <ManageMetrics />
         </Card>
       </Box>

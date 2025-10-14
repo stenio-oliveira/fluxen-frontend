@@ -91,11 +91,25 @@ const useEquipamentoColumns = () => {
       headerName: "Nome do Cliente",
       flex: 1,
       disableColumnMenu: true,
+      renderCell: (params) => {
+        return (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: params.row.cliente_nome ? "text.primary" : "text.secondary",
+                fontWeight: params.row.cliente_nome ? "500" : "400",
+                fontStyle: params.row.cliente_nome ? "normal" : "italic"
+              }}
+            >
+              {params.row.cliente_nome || "Sem cliente associado"}
+            </Typography>
+          </Box>
+        );
+      },
       renderHeader : ( ) => { 
         return (
           <Box sx={{ width: "100%" }}>
-            {/* <Typography sx={{fontSize: '12px', color: "primary.main"}}>Nome do Cliente</Typography> */}
-
             <HeaderFilter
               key={"cliente_nome"}
               label={"Cliente"}
