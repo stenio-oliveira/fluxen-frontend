@@ -1,0 +1,28 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import EquipamentosPage from './pages/EquipamentosPage';
+import ClientesPage from './pages/ClientesPage';
+import MetricasPage from './pages/MetricasPage';
+import EquipamentoDetailPage from './pages/EquipamentoDetailPage';
+import RegisterPage from './pages/RegisterPage';
+
+const AppRoutes: React.FC = () => {
+  return (
+    <Router>
+      <Routes>
+        
+        <Route path="/" element={<HomePage />} />
+        <Route path="/auth" element={<LoginPage />} />
+        <Route path='/register' element={<RegisterPage /> } />
+        <Route path="/equipamentos" element={<EquipamentosPage />} />
+        <Route path="/equipamentos/:id" element={<EquipamentoDetailPage />} />
+        <Route path="/clientes" element={<ClientesPage />} />
+        <Route path="/metricas" element={<MetricasPage />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default AppRoutes;

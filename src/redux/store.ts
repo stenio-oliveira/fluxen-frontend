@@ -1,0 +1,21 @@
+import { configureStore } from '@reduxjs/toolkit';
+import feedbackReducer from './slices/feedBackSlice';
+import sideMenuReducer from './slices/sideMenuSlice';
+import userReducer from './slices/userSlice';
+import equipamentosTableReducer from './slices/equipamentosTableSlice';
+import metricasTableReducer from './slices/metricasTableSlice';
+import clientesTableReducer from './slices/clientesTableSlice';
+
+export const store = configureStore({
+  reducer: {
+    feedback: feedbackReducer,
+    sideMenu: sideMenuReducer,
+    user: userReducer,
+    equipamentosTable: equipamentosTableReducer,
+    metricasTable: metricasTableReducer,
+    clientesTable: clientesTableReducer
+  },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
