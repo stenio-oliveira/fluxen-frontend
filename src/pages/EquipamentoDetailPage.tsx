@@ -5,14 +5,15 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import HistoryIcon from "@mui/icons-material/History";
 import EquipamentoForm from "../components/EquipamentoForm";
 import EquipamentoCliente from "../components/EquipamentoCliente";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ManageMetrics from "../components/ManageMetrics";
 
 const EquipamentoDetail = () => {
-
-  const navigate= useNavigate();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
   
   
@@ -22,23 +23,33 @@ const EquipamentoDetail = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", p: 4, width: "90vw" }}>
       <Box sx={{ maxWidth: 900, mx: "auto" }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Button
+              onClick={() => navigate(-1)}
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              size="small"
+            >
+              Voltar
+            </Button>
+            <Box>
+              <Typography variant="h5" color="primary" fontWeight="bold">
+                Detalhes do Equipamento
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Gerencie informações, métricas e cliente
+              </Typography>
+            </Box>
+          </Box>
           <Button
-            onClick={() => navigate(-1)}
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate(`/equipamentos/${id}/logs`)}
+            variant="contained"
+            startIcon={<HistoryIcon />}
             size="small"
           >
-            Voltar
+            Ver Logs
           </Button>
-          <Box>
-            <Typography variant="h5" color="primary" fontWeight="bold">
-              Detalhes do Equipamento
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Gerencie informações, métricas e cliente
-            </Typography>
-          </Box>
         </Box>
 
         {/* Informações do Equipamento */}

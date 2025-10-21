@@ -17,8 +17,8 @@ const LoginPage: React.FC = () => {
       const { token, user} = await AuthService.login({ email, password });
       console.log('user: ', user)
       console.log('token: ', token)
-       localStorage.setItem("token", token);
-       localStorage.setItem("user", JSON.stringify(user));
+       window.localStorage.setItem("token", token);
+       window.localStorage.setItem("user", JSON.stringify(user));
       dispatch(login({ user }));
       dispatch(setFeedback({ message: 'Login realizado com sucesso', type: 'success'}));
       navigate('/');

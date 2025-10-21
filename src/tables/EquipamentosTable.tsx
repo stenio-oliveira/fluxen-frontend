@@ -20,6 +20,7 @@ export default function EquipamentosTable() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {user} = useSelector((state: RootState) => state.user);
+  console.log("user", user)
   const {columns } = useEquipamentoColumns();
   const {rows, filters, creatingEquipamento, editingEquipamento, deletingEquipamento} = useSelector((state: RootState) => state.equipamentosTable);
 
@@ -53,14 +54,18 @@ export default function EquipamentosTable() {
   }
 
   const fetchEquipments = useCallback( async () => { 
+    console.log("fetchEquipments")
     try{  
-        console.log("filters", filters);
-        const equips = await EquipamentoService.getEquipamentos(filters);
+      console.log("user", user)
+        if(!user) return;
+     
+        const equips = await EquipamentoService.getEquipamentos(user, filters);
+        
         dispatch(setRows(equips));
     }catch(e: any){ 
       dispatch(setFeedback({ message: `Erro ao buscar equipamentos: ${e}`, type: 'error'}));
     }
-  }, [dispatch, filters]);
+  }, [dispatch, filters, user]);
 
   useEffect(() => { 
     fetchEquipments();

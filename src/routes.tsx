@@ -6,6 +6,7 @@ import EquipamentosPage from './pages/EquipamentosPage';
 import ClientesPage from './pages/ClientesPage';
 import MetricasPage from './pages/MetricasPage';
 import EquipamentoDetailPage from './pages/EquipamentoDetailPage';
+import EquipamentoLogsPage from './pages/EquipamentoLogsPage';
 import RegisterPage from './pages/RegisterPage';
 
 const AppRoutes: React.FC = () => {
@@ -18,6 +19,7 @@ const AppRoutes: React.FC = () => {
         <Route path='/register' element={<RegisterPage /> } />
         <Route path="/equipamentos" element={<EquipamentosPage />} />
         <Route path="/equipamentos/:id" element={<EquipamentoDetailPage />} />
+        <Route path="/equipamentos/:id/logs" element={<EquipamentoLogsPage />} />
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/metricas" element={<MetricasPage />} />
       </Routes>

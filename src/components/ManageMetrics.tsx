@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import MetricaService from "../services/metricaService";
 import { setFeedback } from "../redux/slices/feedBackSlice";
-import { Typography, Box, Dialog, Divider, Stack } from "@mui/material";
+import { Typography, Box, Dialog, Divider, Stack, IconButton, Tooltip } from "@mui/material";
 import type { Metrica } from "../types/Metrica";
 import type { Option } from "../types/Option";
 import OptionsField from "./shared/OptionsField";
@@ -15,6 +15,8 @@ import Input from "./shared/Input";
 import EditButton from "./shared/EditButton";
 import DeleteButton from "./shared/DeleteButton";
 import { BaseCancelButton } from "./shared/BaseCancelButton";
+import CodeIcon from "@mui/icons-material/Code";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const ManageMetrics = () => {
   const dispatch = useDispatch();
@@ -28,7 +30,8 @@ const ManageMetrics = () => {
   const [metricOptions, setMetricOptions] = React.useState<Option[]>([]);
   const [selectedMetric, setSelectedMetric] = React.useState<Metrica | null>( null);
   const [formDataDialogOpen, setFormDataDialogOpen] = React.useState<boolean>(false);
-  const [editingEquipamentoMetrica, setEditingEquipamentoMetrica] = React.useState<EquipamentoMetrica | null>(null); 
+  const [editingEquipamentoMetrica, setEditingEquipamentoMetrica] = React.useState<EquipamentoMetrica | null>(null);
+  const [payloadDialogOpen, setPayloadDialogOpen] = React.useState<boolean>(false); 
 
 
 
@@ -153,12 +156,66 @@ const ManageMetrics = () => {
       }
     };
 
+  // Função para gerar o payload JSON baseado nas métricas associadas
+  const generatePayload = () => {
+    const logs = associatedMetrics.map(metric => ({
+      id_equipamento: Number(id), // ID do equipamento atual
+      id_metrica: `${metric.id} //${metric.nome} (${metric.unidade})`, // ID da métrica - ${metric.nome} (${metric.unidade})
+      valor: 0 // Valor exemplo (0-4096)
+    }));
+
+    return {
+      logs
+    };
+  };
+
+  // Função para copiar o JSON para a área de transferência
+  const copyToClipboard = async () => {
+    try {
+      const payload = generatePayload();
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      dispatch(
+        setFeedback({
+          message: "Payload copiado para a área de transferência!",
+          type: "success",
+        })
+      );
+    } catch (error) {
+      dispatch(
+        setFeedback({
+          message: "Erro ao copiar payload",
+          type: "error",
+        })
+      );
+    }
+  };
+
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h6" color="primary" fontWeight={"bold"} gutterBottom>
-        Métricas Associadas
-      </Typography>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Typography variant="h6" color="primary" fontWeight={"bold"}>
+          Métricas Associadas
+        </Typography>
+        {associatedMetrics.length > 0 && (
+          <Tooltip title="Ver modelo de payload para envio de dados">
+            <IconButton
+              onClick={() => setPayloadDialogOpen(true)}
+              sx={{
+                color: "primary.main",
+                border: "1px solid",
+                borderColor: "primary.main",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "white"
+                }
+              }}
+            >
+              <CodeIcon />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
           {associatedMetrics.map((metric) => (
@@ -285,6 +342,65 @@ const ManageMetrics = () => {
             setFormDataDialogOpen(false);
             setEditingEquipamentoMetrica(null);
           }}>Cancelar</BaseCancelButton>
+        </Box>
+      </Dialog>
+
+      {/* Dialog para mostrar o payload JSON */}
+      <Dialog
+        open={payloadDialogOpen}
+        onClose={() => setPayloadDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        aria-labelledby="payload-dialog-title"
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Typography variant="h6" id="payload-dialog-title" color="primary" fontWeight="bold">
+              📡 Modelo de Payload para Envio de Dados
+            </Typography>
+            <Tooltip title="Copiar JSON">
+              <IconButton onClick={copyToClipboard} color="primary">
+                <ContentCopyIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Use este modelo JSON para enviar dados do equipamento. Substitua os valores de exemplo pelos valores reais dos sensores.
+          </Typography>
+
+          <Box
+            sx={{
+              backgroundColor: "#f5f5f5",
+              border: "1px solid #e0e0e0",
+              borderRadius: 1,
+              p: 2,
+              fontFamily: "monospace",
+              fontSize: "12px",
+              overflow: "auto",
+              maxHeight: "400px",
+              whiteSpace: "pre-wrap"
+            }}
+          >
+            {JSON.stringify(generatePayload(), null, 2)}
+          </Box>
+
+          <Box sx={{ mt: 2, p: 2, backgroundColor: "#e3f2fd", borderRadius: 1 }}>
+            <Typography variant="subtitle2" color="primary" fontWeight="bold" gutterBottom>
+              📋 Explicação dos Campos:
+            </Typography>
+            <Typography variant="body2" component="div">
+              <strong>id_equipamento:</strong> ID do equipamento (já preenchido automaticamente)<br />
+              <strong>id_metrica:</strong> ID da métrica específica (já preenchido automaticamente) - comentário mostra o nome e unidade<br />
+              <strong>valor:</strong> Valor bruto do sensor (0-4096) - substitua pelos valores reais
+            </Typography>
+          </Box>
+
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+            <BaseCancelButton onClick={() => setPayloadDialogOpen(false)}>
+              Fechar
+            </BaseCancelButton>
+          </Box>
         </Box>
       </Dialog>
     </Box>
