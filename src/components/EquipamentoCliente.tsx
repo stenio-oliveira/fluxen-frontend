@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import { useParams } from "react-router-dom";
 import EquipamentoService from "../services/equipamentoService";
-import UsuarioService from "../services/usuarioService";
-import type { Usuario } from "../types/Usuario";
+import type { Cliente } from "../types/Cliente";
 import EditIcon from '@mui/icons-material/Edit';
 import { BaseIconButton } from "./shared/BaseIconButton";
 import { useClientOptions } from "../hooks/useClientOptions";
@@ -15,21 +14,25 @@ import { useDispatch } from "react-redux";
 import { setFeedback } from "../redux/slices/feedBackSlice";
 
 
-const EquipamentoCliente = () => {
+interface EquipamentoClienteProps {
+  disabled?: boolean;
+}
+
+const EquipamentoCliente: React.FC<EquipamentoClienteProps> = ({ disabled = false }) => {
   const dispatch = useDispatch();
   const { id }  = useParams();
   const [editingClient, setEditingClient] = useState(false);
-  const [clienteInfo, setClientInfo] = useState<Partial<Usuario>>({});
+  const [clienteInfo, setClientInfo] = useState<Partial<Cliente>>({});
   const {clientOptions} = useClientOptions();
   const [formData, setFormData] = useState<Partial<Equipamento>>({
     id : Number(id),
-    id_usuario: Number(clienteInfo.id),
+    id_cliente: Number(clienteInfo.id),
   });
 
   const fields = [
     { label: "Nome", value: clienteInfo.nome },
-    { label: "Email", value: clienteInfo.email },
-    { label: "Username", value: clienteInfo.username },
+    { label: "CNPJ", value: clienteInfo.cnpj },
+    { label: "Responsável", value: clienteInfo.usuario?.nome },
     { label: "ID", value: clienteInfo.id },
   ];
 
@@ -38,7 +41,7 @@ const EquipamentoCliente = () => {
       const updatedEquip = await EquipamentoService.updateEquipamento(
         Number(id),
         {
-          id_usuario: Number(formData.id_usuario),
+          id_cliente: Number(formData.id_cliente),
         }
       );
       setClientInfo(updatedEquip.cliente ? updatedEquip.cliente : {});
@@ -55,11 +58,11 @@ const EquipamentoCliente = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const client = await UsuarioService.getClienteByEquipamentoId(Number(id));
-      setClientInfo(client || {});
-      console.log(client);
+      const equipamento = await EquipamentoService.getEquipamentoById(Number(id));
+      setClientInfo(equipamento.cliente || {});
+      console.log("Cliente do equipamento:", equipamento.cliente);
     } catch (error) {
-      console.error("Erro ao buscar cliente:", error);
+      console.error("Erro ao buscar equipamento:", error);
       // Se não houver cliente associado, define como objeto vazio
       setClientInfo({});
     }
@@ -136,9 +139,11 @@ const EquipamentoCliente = () => {
         )}
       </CardContent>
 
-      <BaseIconButton onClick={() => setEditingClient(true)} sx={{ position: "absolute", top: 4, right: 4 }}>
-        <EditIcon fontSize="small" />
-      </BaseIconButton>
+      {!disabled && (
+        <BaseIconButton onClick={() => setEditingClient(true)} sx={{ position: "absolute", top: 4, right: 4 }}>
+          <EditIcon fontSize="small" />
+        </BaseIconButton>
+      )}
        {/* Dialog para selecionar o cliente atrelado */}
 
       <Dialog open={editingClient} onClose={() => setEditingClient(false)} maxWidth="md" fullWidth={true}>
@@ -147,12 +152,12 @@ const EquipamentoCliente = () => {
             <OptionsField
                 options={clientOptions}
                 label={"Cliente"}
-                value={formData.id_usuario}
+            value={formData.id_cliente}
                 onChange={(optionId) => { 
                     console.log(optionId);
                     setFormData({
                     ...formData,
-                    id_usuario: Number(optionId),
+                      id_cliente: Number(optionId),
                     })
                 }}
         />

@@ -23,14 +23,52 @@ import { BaseCancelButton } from './shared/BaseCancelButton';
 const MetricaForm = () => {
   const dispatch = useDispatch();
     const [formData, setFormData] = useState<Partial<Metrica>>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const {creatingMetrica, editingMetrica } = useSelector((state: RootState) => state.metricasTable);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({ ...prevData, [name]: value }));
+
+      // Limpar erro de validação quando o usuário começar a digitar
+      if (validationErrors[name]) {
+        setValidationErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
+  }
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    // Validar campos obrigatórios
+    if (!formData.nome || formData.nome.trim() === '') {
+      errors.nome = 'Nome é obrigatório';
     }
+
+    if (!formData.unidade || formData.unidade.trim() === '') {
+      errors.unidade = 'Unidade é obrigatória';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+      // Validar formulário antes de enviar
+      if (!validateForm()) {
+        dispatch(
+          setFeedback({
+            message: "Por favor, preencha todos os campos obrigatórios",
+            type: "error",
+          })
+        );
+        return;
+      }
+
         try {
             if(creatingMetrica){ 
                 const metrica = await MetricaService.createMetrica(formData);
@@ -68,11 +106,13 @@ const MetricaForm = () => {
     const fields = [
         { 
             label: 'Nome', 
-            name: 'nome'
+        name: 'nome',
+        required: true
         },
         { 
             label: 'Unidade', 
-            name: 'unidade'
+          name: 'unidade',
+          required: true
         },
     ]
 
@@ -100,6 +140,7 @@ const MetricaForm = () => {
       if (creatingMetrica) {
         // Reset form data when creating new metric
         setFormData({});
+        setValidationErrors({});
       } else {
         fetchMetrica();
       }
@@ -116,7 +157,13 @@ const MetricaForm = () => {
             onChange={handleChange}
             label={field.label}
             id={field.name}
+            required={field.required}
           />
+          {validationErrors[field.name] && (
+            <span className="mt-1 text-xs text-red-500">
+              {validationErrors[field.name]}
+            </span>
+          )}
         </Box>
       ))}
       <Stack direction="row" spacing={2}>
@@ -128,6 +175,7 @@ const MetricaForm = () => {
         <BaseCancelButton
           onClick={() => {
             setFormData({}); // Reset form data
+            setValidationErrors({}); // Reset validation errors
             if (creatingMetrica) {
               dispatch(setCreatingMetrica(false));
               return;

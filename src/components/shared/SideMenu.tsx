@@ -13,17 +13,23 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import AnalyticsIcon from "@mui/icons-material/Analytics";
 import HomeRepairServiceIcon from "@mui/icons-material/HomeRepairService";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PeopleIcon from "@mui/icons-material/People";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
 import { logout } from "../../redux/slices/userSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function SideMenu() {
   const user = useSelector((state: RootState) => state.user.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
   const sideMenuRef = React.useRef<HTMLDivElement>(null);
 
-  const links = [
+  // Verificar se o usuário é ADM
+  const isAdmin = user?.perfil_nome === 'ADM';
+
+  const allLinks = [
     {
       name: "Equipamentos",
       link: "/equipamentos",
@@ -33,14 +39,27 @@ export default function SideMenu() {
       name: "Clientes",
       link: "/clientes",
       icon: <AccountCircle color="primary" />,
+      adminOnly: true, // Apenas para ADM
+    },
+    {
+      name: "Usuários",
+      link: "/usuarios",
+      icon: <PeopleIcon color="primary" />,
+      adminOnly: true, // Apenas para ADM
     },
     {
       name: "Métricas",
       link: "/metricas",
       icon: <AnalyticsIcon color="primary" />,
+      adminOnly: true, // Apenas para ADM
     },
   ];
-  
+
+  // Filtrar links baseado no perfil do usuário
+  // Não-ADM: apenas Equipamentos
+  // ADM: todos os links
+  const links = allLinks.filter(link => !link.adminOnly || isAdmin);
+
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
   };
@@ -75,7 +94,7 @@ export default function SideMenu() {
         {links.map((link) => (
           <ListItem key={link.link} disablePadding>
             <ListItemButton onClick={() => {
-              window.location.href = link.link;
+              navigate(link.link);
               setOpen(false);
             }}>
               <ListItemIcon color="primary">

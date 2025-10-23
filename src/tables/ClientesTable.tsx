@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Dialog, DialogContent, DialogTitle, Stack } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { useEffect } from "react";
-import { setRows, setCreatingCliente, setDeletingCliente, setFilters } from "../redux/slices/clientesTableSlice";
+import { useEffect, useCallback } from "react";
+import { setRows, setCreatingCliente, setDeletingCliente, setFilters, removeCliente } from "../redux/slices/clientesTableSlice";
 import { setFeedback } from "../redux/slices/feedBackSlice";
 import { useClientColumns } from "../hooks/useClientColumns";
 import Search from "../components/Search";
@@ -10,11 +10,12 @@ import { BaseCreateButton } from "../components/shared/BaseCreateButton";
 import BaseDeleteDialog from "../components/shared/BaseDeleteDialog";
 import ClienteForm from "../components/ClienteForm";
 import type { RootState } from "../redux/store";
-import UsuarioService from "../services/usuarioService";
+import ClienteService from "../services/clienteService";
 import { tableStyles } from "../styles";
 
 const ClientesTable = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.user);
   const { rows, filters, creatingCliente, editingCliente, deletingCliente } = useSelector((state: RootState) => state.clientesTable);
   const { columns } = useClientColumns();
 
@@ -27,10 +28,13 @@ const ClientesTable = () => {
     );
   };
 
-  const handleDeleteCliente = async (id: number) => {
+  const handleDeleteCliente = async () => {
+    console.log("deletingCliente", deletingCliente);
+
     try {
-      await UsuarioService.deleteUsuario(id);
-      dispatch({ type: "clientesTable/removeCliente", payload: id });
+      if (deletingCliente === null) return;
+      await ClienteService.deleteCliente(deletingCliente);
+      dispatch(removeCliente(deletingCliente));
       dispatch(setDeletingCliente(null));
       dispatch(setFeedback({ message: "Cliente deletado com sucesso", type: "success" }));
     } catch (e: any) {
@@ -38,20 +42,19 @@ const ClientesTable = () => {
     }
   };
 
-  const fetchClientes = async () => {
-    console.log("fetchCLientes")
+  const fetchClientes = useCallback(async () => {
     try {
-      const clientes = await UsuarioService.getClientUsers(filters);
+      if (!user) return;
+      const clientes = await ClienteService.getClientes(user, filters);
       dispatch(setRows(clientes));
     } catch (e: any) {
       dispatch(setFeedback({ message: `Erro ao buscar clientes: ${e}`, type: "error" }));
     }
-  };
+  }, [dispatch, filters, user]);
 
   useEffect(() => {
-    console.log("useEffect")
     fetchClientes();
-  }, [filters]);
+  }, [fetchClientes]);
 
   return (
     <Box sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 1 }}>
@@ -84,10 +87,7 @@ const ClientesTable = () => {
       </Dialog>
       <BaseDeleteDialog
         open={deletingCliente !== null}
-        onConfirm={() => {
-          if (!deletingCliente) return;
-          handleDeleteCliente(deletingCliente);
-        }}
+        onConfirm={handleDeleteCliente}
         onCancel={() => dispatch(setDeletingCliente(null))}
       />
     </Box>

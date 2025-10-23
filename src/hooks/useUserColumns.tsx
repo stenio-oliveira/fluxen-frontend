@@ -1,15 +1,16 @@
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
-import { setDeletingCliente, setEditingCliente, setFilters } from '../redux/slices/clientesTableSlice';
+import { setDeletingUser, setEditingUser, setFilters } from '../redux/slices/usersTableSlice';
 import HeaderFilter from '../components/shared/HeaderFilter';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Typography } from '@mui/material';
 
-export const useClientColumns = () => {
+export const useUserColumns = () => {
   const dispatch = useDispatch();
-  const { filters } = useSelector((state: RootState) => state.clientesTable);
+  const { filters } = useSelector((state: RootState) => state.usersTable);
+  
   const handleChangeFilters = (field: string, value: string) => {
     dispatch(setFilters({
       ...filters,
@@ -62,13 +63,15 @@ export const useClientColumns = () => {
       },
       renderCell: (params: GridRenderCellParams) => (
         <Box sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', color: 'primary.main', fontWeight: 'bold' }}>{params.row.nome}</Typography>
+          <Typography sx={{ fontSize: '12px', color: 'primary.main', fontWeight: 'bold' }}>
+            {params.row.nome}
+          </Typography>
         </Box>
       )
     },
     {
-      field: 'cnpj',
-      headerName: 'CNPJ',
+      field: 'email',
+      headerName: 'Email',
       flex: 1,
       disableColumnMenu: true,
       renderHeader: (params: any) => {
@@ -76,9 +79,9 @@ export const useClientColumns = () => {
         return (
           <Box sx={{ width: colDef.width }}>
             <HeaderFilter
-              key={'cnpj'}
-              label={'CNPJ'}
-              field={'cnpj'}
+              key={'email'}
+              label={'Email'}
+              field={'email'}
               type={'string'}
               onFilterChange={handleChangeFilters}
             />
@@ -87,8 +90,8 @@ export const useClientColumns = () => {
       }
     },
     {
-      field: 'responsavel_nome',
-      headerName: 'Responsável',
+      field: 'username',
+      headerName: 'Usuário',
       flex: 1,
       disableColumnMenu: true,
       renderHeader: (params: any) => {
@@ -96,9 +99,9 @@ export const useClientColumns = () => {
         return (
           <Box sx={{ width: colDef.width }}>
             <HeaderFilter
-              key={'responsavel_nome'}
-              label={'Responsável'}
-              field={'responsavel_nome'}
+              key={'username'}
+              label={'Usuário'}
+              field={'username'}
               type={'string'}
               onFilterChange={handleChangeFilters}
             />
@@ -115,8 +118,14 @@ export const useClientColumns = () => {
         const { row } = params;
         return (
           <Box sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
-            <EditIcon sx={{ cursor: 'pointer', color: 'primary.main' }} onClick={() => dispatch(setEditingCliente(row.id))} />
-            <DeleteIcon sx={{ cursor: 'pointer', color: 'error.main', ml: 1 }} onClick={() => dispatch(setDeletingCliente(row.id))} />
+            <EditIcon 
+              sx={{ cursor: 'pointer', color: 'primary.main' }} 
+              onClick={() => dispatch(setEditingUser(row.id))} 
+            />
+            <DeleteIcon 
+              sx={{ cursor: 'pointer', color: 'error.main', ml: 1 }} 
+              onClick={() => dispatch(setDeletingUser(row.id))} 
+            />
           </Box>
         );
       }
@@ -125,3 +134,5 @@ export const useClientColumns = () => {
 
   return { columns };
 };
+
+export default useUserColumns;

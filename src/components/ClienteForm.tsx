@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Stack } from '@mui/material';
 import Input from './shared/Input';
-import UsuarioService from '../services/usuarioService';
+import OptionsField from './shared/OptionsField';
+import ClienteService from '../services/clienteService';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { setFeedback } from '../redux/slices/feedBackSlice';
@@ -13,75 +14,82 @@ import {
 } from '../redux/slices/clientesTableSlice';
 import { BaseButton } from './shared/Button';
 import { BaseCancelButton } from './shared/BaseCancelButton';
+import { useUserOptions } from '../hooks/useUserOptions';
 
 const ClienteForm = () => {
   const dispatch = useDispatch();
   const { creatingCliente, editingCliente } = useSelector((state: RootState) => state.clientesTable);
-  const [formData, setFormData] = useState({ nome: '', email: '', username: '', senha: '' });
+  const [formData, setFormData] = useState({ nome: '', cnpj: '', id_responsavel: null as number | null });
+  const { userOptions } = useUserOptions();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: name === 'id_responsavel' ? (value ? Number(value) : null) : value
+    }));
+  };
+
+  const handleResponsavelChange = (value: string | number) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      id_responsavel: value ? Number(value) : null
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("e: ", e);
     e.preventDefault();
 
-    if(!formData.email || !formData.senha || !formData.username || !formData.nome){ 
-      dispatch(setFeedback({ message: 'Preencha todos os campos', type: 'error' }));
+    if (!formData.nome) {
+      dispatch(setFeedback({ message: 'Preencha todos os campos obrigatórios', type: 'error' }));
       return;
     };
     try {
       if (creatingCliente) {
-        const usuario = await UsuarioService.createClient(formData);
-        if (usuario) {
-          dispatch(addCliente(usuario));
-          dispatch(setFeedback({ message: 'Usuário criado com sucesso', type: 'success' }));
+        const cliente = await ClienteService.createCliente(formData);
+        if (cliente) {
+          dispatch(addCliente(cliente));
+          dispatch(setFeedback({ message: 'Cliente criado com sucesso', type: 'success' }));
           dispatch(setCreatingCliente(false));
         }
         return;
       }
       if (editingCliente) {
-        const usuario = await UsuarioService.updateUsuario(editingCliente, formData);
-        if (usuario) {
-          console.log("usuario updated", usuario);
-          dispatch(replaceCliente(usuario));
-          dispatch(setFeedback({ message: 'Usuário atualizado com sucesso', type: 'success' }));
+        const cliente = await ClienteService.updateCliente(editingCliente, formData);
+        if (cliente) {
+          dispatch(replaceCliente(cliente));
+          dispatch(setFeedback({ message: 'Cliente atualizado com sucesso', type: 'success' }));
           dispatch(setEditingCliente(null));
         }
         return;
       }
     } catch (e) {
-      dispatch(setFeedback({ message: `Erro ao salvar usuário: ${e}`, type: 'error' }));
+      dispatch(setFeedback({ message: `Erro ao salvar cliente: ${e}`, type: 'error' }));
     }
   };
 
-  const fetchUsuario = async () => {
+  const fetchCliente = async () => {
     if (!editingCliente) return;
     try {
-      const usuario = await UsuarioService.getUsuarioById(editingCliente);
-      console.log("usuario", usuario);
+      const cliente = await ClienteService.getClienteById(editingCliente);
+      console.log("cliente", cliente);
       setFormData({
-        nome: usuario?.nome || '',
-        email: usuario?.email || '',
-        username: usuario?.username || '',
-        senha: '', // nunca preenche senha por segurança
+        nome: cliente?.nome || '',
+        cnpj: cliente?.cnpj || '',
+        id_responsavel: cliente?.id_responsavel || null,
       });
     } catch (e: any) {
-      dispatch(setFeedback({ message: `Erro ao buscar usuário: ${e}`, type: 'error' }));
+      dispatch(setFeedback({ message: `Erro ao buscar cliente: ${e}`, type: 'error' }));
     }
   };
 
   useEffect(() => {
-    fetchUsuario();
+    fetchCliente();
   }, [editingCliente]);
 
   const fields = [
     { label: 'Nome', name: 'nome', type: 'text' },
-    { label: 'Email', name: 'email', type: 'email' },
-    { label: 'Usuário', name: 'username', type: 'text' },
-    { label: 'Senha', name: 'senha', type: 'password' },
+    { label: 'CNPJ', name: 'cnpj', type: 'text' },
   ];
 
   return (
@@ -93,17 +101,25 @@ const ClienteForm = () => {
       {fields.map((field) => (
         <Box key={field.name}>
           <Input
-            value={formData[field.name as keyof typeof formData]}
+            value={formData[field.name as keyof typeof formData] || ''}
             name={field.name}
-            
             onChange={handleChange}
             label={field.label}
             id={field.name}
-            required={true}
+            required={field.name === 'nome'}
             type={field.type}
           />
         </Box>
       ))}
+
+      <Box>
+        <OptionsField
+          label="Usuário Responsável"
+          options={userOptions}
+          value={formData.id_responsavel || ''}
+          onChange={handleResponsavelChange}
+        />
+      </Box>
       <Stack direction="row" spacing={2}>
         {creatingCliente ? (
           <BaseButton

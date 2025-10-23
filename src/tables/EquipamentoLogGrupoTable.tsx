@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography, Chip } from "@mui/material";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { useDispatch } from "react-redux";
 import { setFeedback } from "../redux/slices/feedBackSlice";
@@ -6,6 +6,7 @@ import EquipamentoLogService from "../services/equipamentoLogService";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { tableStyles } from "../styles";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 interface TableData {
     columns: GridColDef[];
@@ -18,11 +19,17 @@ export default function EquipamentoLogGrupoTable() {
     const [columns, setColumns] = useState<GridColDef[]>([]);
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
 
-    const fetchTableData = useCallback(async () => {
+    const fetchTableData = useCallback(async (isAutoRefresh = false) => {
         if (!id) return;
 
-        setLoading(true);
+        if (isAutoRefresh) {
+            setIsAutoRefreshing(true);
+        } else {
+            setLoading(true);
+        }
+
         try {
             const tableData: TableData = await EquipamentoLogService.getLogsTableData(Number(id));
 
@@ -57,12 +64,27 @@ export default function EquipamentoLogGrupoTable() {
                 })
             );
         } finally {
-            setLoading(false);
+            if (isAutoRefresh) {
+                setIsAutoRefreshing(false);
+            } else {
+                setLoading(false);
+            }
         }
     }, [id, dispatch]);
 
     useEffect(() => {
+        // Fetch inicial
         fetchTableData();
+
+        // Configurar fetch automático a cada 10 segundos
+        const interval = setInterval(() => {
+            fetchTableData(true); // true indica que é um refresh automático
+        }, 10000); // 10 segundos
+
+        // Cleanup: limpar o interval quando o componente for desmontado
+        return () => {
+            clearInterval(interval);
+        };
     }, [fetchTableData]);
 
     return (
@@ -75,6 +97,22 @@ export default function EquipamentoLogGrupoTable() {
                 gap: 1,
             }}
         >
+            {/* Indicador de atualização automática */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                <Chip
+                    icon={<AccessTimeIcon />}
+                    label="Atualização automática a cada 10s"
+                    variant="outlined"
+                    size="small"
+                    color="primary"
+                />
+                {isAutoRefreshing && (
+                    <Typography variant="caption" color="primary" sx={{ fontStyle: "italic" }}>
+                        Atualizando...
+                    </Typography>
+                )}
+            </Box>
+
             <DataGrid
                 rows={rows}
                 columns={columns}

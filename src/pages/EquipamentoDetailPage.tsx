@@ -3,22 +3,78 @@ import {
   Button,
   Card,
   Typography,
+  Chip,
+  IconButton,
+  Tooltip,
+  Collapse,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import HistoryIcon from "@mui/icons-material/History";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import KeyIcon from "@mui/icons-material/Key";
 import EquipamentoForm from "../components/EquipamentoForm";
 import EquipamentoCliente from "../components/EquipamentoCliente";
 import { useNavigate, useParams } from "react-router-dom";
 import ManageMetrics from "../components/ManageMetrics";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "../redux/store";
+import { setFeedback } from "../redux/slices/feedBackSlice";
+import EquipamentoService from "../services/equipamentoService";
+import type { Equipamento } from "../types/Equipamento";
+import { useState, useEffect } from "react";
 
 const EquipamentoDetail = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { id } = useParams();
+  const { user } = useSelector((state: RootState) => state.user);
+  const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
+  const [showApiKey, setShowApiKey] = useState<boolean>(false);
 
-  
-  
-  
-  // MOCK DATA
+  // Verificar se o usuário é ADM
+  const isAdmin = user?.perfil_nome === 'ADM';
+
+  // Buscar dados do equipamento
+  useEffect(() => {
+    const fetchEquipamento = async () => {
+      if (id) {
+        try {
+          const equipamentoData = await EquipamentoService.getEquipamentoById(Number(id));
+          setEquipamento(equipamentoData);
+        } catch (error) {
+          console.error('Erro ao buscar equipamento:', error);
+          dispatch(setFeedback({
+            message: 'Erro ao carregar dados do equipamento',
+            type: 'error'
+          }));
+        }
+      }
+    };
+
+    fetchEquipamento();
+  }, [id, dispatch]);
+
+  // Função para copiar API key
+  const copyApiKey = async () => {
+    if (equipamento?.api_key) {
+      try {
+        await navigator.clipboard.writeText(equipamento.api_key);
+        dispatch(setFeedback({
+          message: 'API Key copiada para a área de transferência!',
+          type: 'success'
+        }));
+      } catch (error) {
+        dispatch(setFeedback({
+          message: 'Erro ao copiar API Key',
+          type: 'error'
+        }));
+      }
+    }
+  };
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", p: 4, width: "90vw" }}>
       <Box sx={{ maxWidth: 900, mx: "auto" }}>
@@ -52,6 +108,90 @@ const EquipamentoDetail = () => {
           </Button>
         </Box>
 
+        {/* API Key - Apenas para Admin */}
+        {isAdmin && equipamento?.api_key && (
+          <Card
+            elevation={1}
+            sx={{
+              mb: 3,
+              padding: 2,
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              boxShadow: "none",
+              border: "1px solid lightgray",
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold" }}>
+                🔑 API Key
+              </Typography>
+              <Tooltip title={showApiKey ? "Ocultar API Key" : "Mostrar API Key"}>
+                <IconButton
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  color="primary"
+                  size="small"
+                >
+                  {showApiKey ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            <Collapse in={showApiKey}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <TextField
+                  value={equipamento.api_key}
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    readOnly: true,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <KeyIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Copiar API Key">
+                          <IconButton onClick={copyApiKey} color="primary" size="small">
+                            <ContentCopyIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      fontFamily: "monospace",
+                      fontSize: "0.875rem",
+                      "& .MuiInputBase-input": {
+                        color: "text.secondary",
+                      }
+                    }
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+                  Use esta chave para autenticar o envio de dados do equipamento.
+                </Typography>
+              </Box>
+            </Collapse>
+
+            {!showApiKey && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Chip
+                  icon={<KeyIcon />}
+                  label="API Key disponível"
+                  variant="outlined"
+                  size="small"
+                  color="primary"
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+                  Clique no ícone de olho para visualizar
+                </Typography>
+              </Box>
+            )}
+          </Card>
+        )}
+
         {/* Informações do Equipamento */}
         <Card
           elevation={1}
@@ -69,7 +209,7 @@ const EquipamentoDetail = () => {
           <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
             📝 Informações do Equipamento
           </Typography>
-          <EquipamentoForm />
+          <EquipamentoForm disabled={!isAdmin} />
         </Card>
 
         {/* Cliente Associado */}
@@ -89,7 +229,7 @@ const EquipamentoDetail = () => {
           <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
             👤 Cliente Associado
           </Typography>
-          <EquipamentoCliente />
+          <EquipamentoCliente disabled={!isAdmin} />
         </Card>
 
         {/* Métricas Associadas */}
@@ -108,7 +248,7 @@ const EquipamentoDetail = () => {
           <Typography variant="h6" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
             📊 Métricas Associadas
           </Typography>
-          <ManageMetrics />
+          <ManageMetrics disabled={!isAdmin} />
         </Card>
       </Box>
     </Box>

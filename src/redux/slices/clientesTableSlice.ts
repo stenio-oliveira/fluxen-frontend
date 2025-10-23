@@ -1,21 +1,21 @@
-import type { Usuario } from "../../types/Usuario";
+import type { Cliente } from "../../types/Cliente";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export interface ClientesFilters {
+export interface ClienteFilters {
   columnFilters: {
     id: string | null;
     nome: string | null;
-    email: string | null;
-    username: string | null;
+    cnpj: string | null;
+    responsavel_nome: string | null;
   };
   generalFilter: string;
 }
 
 export interface ClientesTableState {
-  rows: Usuario[];
+  rows: Cliente[];
 //   columns: GridColDef[];
   loading: boolean;
-  filters: ClientesFilters;
+  filters: ClienteFilters;
   creatingCliente: boolean;
   editingCliente: number | null;
   deletingCliente: number | null;
@@ -29,8 +29,8 @@ const initialState: ClientesTableState = {
     columnFilters: {
       id: null,
       nome: null,
-      email: null,
-      username: null,
+      cnpj: null,
+      responsavel_nome: null,
     },
     generalFilter: "",
   },
@@ -43,7 +43,7 @@ const clientesTableSlice = createSlice({
   name: "clientesTable",
   initialState,
   reducers: {
-    setRows(state, action: PayloadAction<Usuario[]>) {
+    setRows(state, action: PayloadAction<Cliente[]>) {
       state.rows = action.payload;
     },
     // setColumns(state, action: PayloadAction<GridColDef[]>) {
@@ -52,7 +52,7 @@ const clientesTableSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
-    setFilters(state, action: PayloadAction<ClientesFilters>) {
+    setFilters(state, action: PayloadAction<ClienteFilters>) {
       state.filters = action.payload;
     },
     setCreatingCliente(state, action: PayloadAction<boolean>) {
@@ -64,10 +64,10 @@ const clientesTableSlice = createSlice({
     setDeletingCliente(state, action: PayloadAction<number | null>) {
       state.deletingCliente = action.payload;
     },
-    addCliente(state, action: PayloadAction<Usuario>) {
+    addCliente(state, action: PayloadAction<Cliente>) {
       state.rows.push(action.payload);
     },
-    replaceCliente(state, action: PayloadAction<Usuario>) {
+    replaceCliente(state, action: PayloadAction<Cliente>) {
       const index = state.rows.findIndex((row) => row.id === action.payload.id);
       if (index !== -1) {
         state.rows[index] = action.payload;

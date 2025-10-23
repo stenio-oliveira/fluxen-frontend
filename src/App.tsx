@@ -1,17 +1,21 @@
 import React, { useEffect } from 'react';
 import AppRoutes from './routes';
-import { Provider, useDispatch } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './redux/store';
 import SideMenu from './components/shared/SideMenu';
 import { ThemeProvider } from '@emotion/react';
 import theme from './theme';
 import SnackBar from './components/shared/SnackBar';
-import { login } from './redux/slices/userSlice';
+import { login, setAuthChecking } from './redux/slices/userSlice';
 import type { Usuario } from './types/Usuario';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import type { RootState } from './redux/store';
 
 // Componente interno que inicializa o estado do usuário
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
+  const { isAuthChecking } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     // Verifica se há dados do usuário no localStorage
@@ -27,9 +31,34 @@ const AppContent: React.FC = () => {
         // Remove dados inválidos do localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        dispatch(setAuthChecking(false));
       }
+    } else {
+      // Se não há token ou userData, marca como verificação concluída
+      dispatch(setAuthChecking(false));
     }
   }, [dispatch]);
+
+  // Mostrar loading enquanto verifica autenticação
+  if (isAuthChecking) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={60} />
+        <Typography variant="h6" color="text.secondary">
+          Verificando autenticação...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -44,7 +73,9 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Provider store={store}>
-        <AppContent />
+        <Router>
+          <AppContent />
+        </Router>
       </Provider>
     </ThemeProvider>
   );

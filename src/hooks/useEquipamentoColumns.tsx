@@ -11,6 +11,10 @@ const useEquipamentoColumns = () => {
 
   const dispatch = useDispatch();
   const {filters} = useSelector((state: RootState) => state.equipamentosTable);
+  const { user } = useSelector((state: RootState) => state.user);
+
+  // Verificar se o usuário é ADM
+  const isAdmin = user?.perfil_nome === 'ADM';
   const handleChangeFilters = (field: string, value: string) => {
     dispatch(setFilters({ 
       ...filters, 
@@ -127,6 +131,17 @@ const useEquipamentoColumns = () => {
       flex: 1,
       disableColumnMenu: true,
       renderCell: (params) => {
+        // Se não for ADM, não mostrar ações
+        if (!isAdmin) {
+          return (
+            <Box sx={{ display: "flex", gap: 1, height: '100%', alignItems: 'center' }}>
+              <Typography fontSize="12px" color="gray" fontWeight="bold">
+                Apenas consulta
+              </Typography>
+            </Box>
+          );
+        }
+
         return (
           <Box sx={{ display: "flex", gap: 1 }}>
             <EditIcon

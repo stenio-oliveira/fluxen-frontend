@@ -15,32 +15,101 @@ import { BaseCancelButton } from './shared/BaseCancelButton';
 
 export interface EquipmentForm {
   nome: string;
-  id_usuario?: number;
+  id_cliente?: number;
 }
 
-const EquipamentoForm = () => {
+interface EquipamentoFormProps {
+  disabled?: boolean;
+}
+
+const EquipamentoForm: React.FC<EquipamentoFormProps> = ({ disabled = false }) => {
   const dispatch = useDispatch();
   const {id} = useParams();
   const [formData, setFormData] = React.useState<EquipmentForm>({
     nome: '',
+
   });
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [equipamentoId, setEquipamentoId] = React.useState<number | null>(null);
   const editingEquipamento = useSelector((state: RootState) => state.equipamentosTable.editingEquipamento);
   const {clientOptions } = useClientOptions();
 
   const fields = [
-    {label: 'Equipamento', name: 'nome'},
+    { label: 'Equipamento', name: 'nome' },
   ];
   const optionFields = [
-    {label: 'Cliente', name: 'id_usuario'},
+    { label: 'Cliente', name: 'id_cliente' },
   ];
 
   const resetFormData = ( ) => { 
       fetchDataCallback();
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    console.log('handleChange - name:', name, 'value:', value);
+    setFormData((prevData) => {
+      const newData = { ...prevData, [name]: value };
+      console.log('handleChange - newData:', newData);
+      return newData;
+    });
+
+    // Limpar erro de validação quando o usuário começar a digitar
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleClientChange = (value: string | number) => {
+    setFormData({ ...formData, id_cliente: value ? Number(value) : undefined });
+
+    // Limpar erro de validação do cliente
+    if (validationErrors.id_cliente) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.id_cliente;
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    // Validar campos obrigatórios
+    if (!formData.nome || formData.nome.trim() === '') {
+      errors.nome = 'Nome do equipamento é obrigatório';
+    }
+
+    // Validação específica para criação (quando não há id)
+    if (!id && !equipamentoId) {
+      if (!formData.id_cliente) {
+        errors.id_cliente = 'Cliente é obrigatório';
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar formulário antes de enviar
+    if (!validateForm()) {
+      dispatch(
+        setFeedback({
+          message: "Por favor, preencha todos os campos obrigatórios",
+          type: "error",
+        })
+      );
+      return;
+    }
+
     try {
       if (equipamentoId) {
         const updatedEquip = await EquipamentoService.updateEquipamento(
@@ -87,9 +156,10 @@ const EquipamentoForm = () => {
         console.log(equip);
         setFormData({
           nome: equip.nome,
-          id_usuario: equip.id_usuario
+          id_cliente: equip.id_cliente
         });
         setEquipamentoId(equip.id);
+        setValidationErrors({});
       }
     } catch (error: any) {
       dispatch(
@@ -131,47 +201,64 @@ const EquipamentoForm = () => {
               <Input
                 key={field.label}
                 label={field.label}
-                value={formData[field.name as keyof EquipmentForm]}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    [field.name]: e.target.value,
-                  })
-                }
+                name={field.name}
+                value={formData[field.name as keyof EquipmentForm] || ''}
+                onChange={handleChange}
+                disabled={disabled}
+                required
               />
+              {validationErrors[field.name] && (
+                <span className="mt-1 text-xs text-red-500">
+                  {validationErrors[field.name]}
+                </span>
+              )}
             </Stack>
           );
         })}
         {!id && optionFields.map((field) => {
           return (
-            <OptionsField
-              options={clientOptions}
+            <Stack
               key={field.name}
-     
-              label={field.label}
-              value={formData[field.name as keyof EquipmentForm]}
-              onChange={(e) => setFormData({ ...formData, [field.name]: e })}
-            />
+              direction={"column"}
+              alignItems={"flex-start"}
+              sx={{ width: "100%" }}
+            >
+              <OptionsField
+                options={clientOptions}
+                label={field.label}
+                value={formData[field.name as keyof EquipmentForm]}
+                onChange={handleClientChange}
+                disabled={disabled}
+                required
+              />
+              {validationErrors[field.name] && (
+                <span className="mt-1 text-xs text-red-500">
+                  {validationErrors[field.name]}
+                </span>
+              )}
+            </Stack>
           );
         })}
       </Box>
-      <Stack direction={"row"} justifyContent="flex-end" gap={2} width={"100%"}>
-        <BaseButton type="submit" onClick={handleSubmit}>
-          Salvar
-        </BaseButton>
-        <BaseCancelButton
-          onClick={() => { 
-
-            if(id){ 
-              resetFormData()
-            }
-            dispatch(setCreatingEquipamento(false));
-            dispatch(setEditingEquipamento(null));
-          }}
-        >
-          Cancelar
-        </BaseCancelButton>
-      </Stack>
+      {!disabled && (
+        <Stack direction={"row"} justifyContent="flex-end" gap={2} width={"100%"}>
+          <BaseButton type="submit" onClick={handleSubmit}>
+            Salvar
+          </BaseButton>
+          <BaseCancelButton
+            onClick={() => { 
+              setValidationErrors({});
+              if (id) {
+                resetFormData()
+              }
+              dispatch(setCreatingEquipamento(false));
+              dispatch(setEditingEquipamento(null));
+            }}
+          >
+            Cancelar
+          </BaseCancelButton>
+        </Stack>
+      )}
     </Box>
   );
 }

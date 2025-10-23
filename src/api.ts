@@ -1,7 +1,10 @@
 import axios from 'axios';
+import { store } from './redux/store';
+import { logout } from './redux/slices/userSlice';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000', // Atualize com a URL do backend
+  // baseURL: 'http://localhost:3000', // Atualize com a URL do backend
+  baseURL: 'https://api.fluxen.cloud',
 });
 
 api.interceptors.request.use((config) => {
@@ -16,7 +19,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      window.location.href = '/auth';
+      // Só redireciona se não estiver já na página de auth
+      if (window.location.pathname !== '/auth') {
+        // Limpa o estado do Redux
+        store.dispatch(logout());
+        // Limpa o localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      // Redireciona para auth
+        window.location.href = '/auth';
+      }
     }
     return Promise.reject(error);
   }

@@ -18,7 +18,11 @@ import { BaseCancelButton } from "./shared/BaseCancelButton";
 import CodeIcon from "@mui/icons-material/Code";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
-const ManageMetrics = () => {
+interface ManageMetricsProps {
+  disabled?: boolean;
+}
+
+const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const [metrics, setMetrics] = React.useState<Metrica[]>([]);
@@ -27,6 +31,7 @@ const ManageMetrics = () => {
     valor_minimo: 0,
     valor_maximo: 0
   });
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [metricOptions, setMetricOptions] = React.useState<Option[]>([]);
   const [selectedMetric, setSelectedMetric] = React.useState<Metrica | null>( null);
   const [formDataDialogOpen, setFormDataDialogOpen] = React.useState<boolean>(false);
@@ -67,8 +72,78 @@ const ManageMetrics = () => {
 
     const resetMetrics = () => {
       setFormData({});
+      setValidationErrors({});
       fetchMetricsCallback();
     };
+
+  const validateFormData = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    // Validar valor mínimo
+    if (formData.valor_minimo === undefined || formData.valor_minimo === null) {
+      errors.valor_minimo = 'Valor mínimo é obrigatório';
+    } else if (formData.valor_minimo < 0) {
+      errors.valor_minimo = 'Valor mínimo não pode ser negativo';
+    }
+
+    // Validar valor máximo
+    if (formData.valor_maximo === undefined || formData.valor_maximo === null) {
+      errors.valor_maximo = 'Valor máximo é obrigatório';
+    } else if (formData.valor_maximo < 0) {
+      errors.valor_maximo = 'Valor máximo não pode ser negativo';
+    }
+
+    // Validar se valores são diferentes
+    if (formData.valor_minimo !== undefined && formData.valor_maximo !== undefined) {
+      if (formData.valor_minimo === formData.valor_maximo) {
+        errors.valor_maximo = 'Valor máximo deve ser diferente do valor mínimo';
+      } else if (formData.valor_minimo > formData.valor_maximo) {
+        errors.valor_maximo = 'Valor máximo deve ser maior que o valor mínimo';
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleMinValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    setFormData({ ...formData, valor_minimo: value });
+
+    // Limpar erros relacionados ao valor mínimo
+    if (validationErrors.valor_minimo) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.valor_minimo;
+        return newErrors;
+      });
+    }
+
+    // Limpar erro de valor máximo se estava relacionado à comparação
+    if (validationErrors.valor_maximo &&
+      (validationErrors.valor_maximo.includes('diferente') ||
+        validationErrors.valor_maximo.includes('maior'))) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.valor_maximo;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleMaxValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    setFormData({ ...formData, valor_maximo: value });
+
+    // Limpar erro de validação do valor máximo
+    if (validationErrors.valor_maximo) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.valor_maximo;
+        return newErrors;
+      });
+    }
+  };
 
   React.useEffect(() => {
     
@@ -76,6 +151,17 @@ const ManageMetrics = () => {
   }, []);
 
   const   handleAddMetric = async () => {
+    // Validar formulário antes de adicionar
+    if (!validateFormData()) {
+      dispatch(
+        setFeedback({
+          message: "Por favor, corrija os erros nos valores",
+          type: "error",
+        })
+      );
+      return;
+    }
+
     if (selectedMetric) {
       const existingMetric = associatedMetrics.find((metric) => metric.id === selectedMetric.id);
       if (existingMetric) {
@@ -137,6 +223,17 @@ const ManageMetrics = () => {
 
     const handleUpdateEquipamentoMetrica = async (
     ) => {
+      // Validar formulário antes de atualizar
+      if (!validateFormData()) {
+        dispatch(
+          setFeedback({
+            message: "Por favor, corrija os erros nos valores",
+            type: "error",
+          })
+        );
+        return;
+      }
+
       try {
           await MetricaService.updateEquipamentoMetrica(
           editingEquipamentoMetrica?.id || 0,
@@ -160,8 +257,9 @@ const ManageMetrics = () => {
   const generatePayload = () => {
     const logs = associatedMetrics.map(metric => ({
       id_equipamento: Number(id), // ID do equipamento atual
-      id_metrica: `${metric.id} //${metric.nome} (${metric.unidade})`, // ID da métrica - ${metric.nome} (${metric.unidade})
-      valor: 0 // Valor exemplo (0-4096)
+      id_metrica: metric.id,
+      valor: 0, // Valor bruto do sensor (0-4096)
+      valor_convertido: null // Valor já convertido para a unidade correta da métrica (opcional)
     }));
 
     return {
@@ -257,23 +355,25 @@ const ManageMetrics = () => {
                   Máx {metric.valor_maximo}
                 </Typography>
               </Stack>
-              <DeleteButton onClick={() => handleDeleteMetric(metric)} />
-              <EditButton
-                onClick={() => { 
-                  console.log("metric", metric);
-                  setEditingEquipamentoMetrica(
-                    metric.equipamento_metrica
-                      ? metric.equipamento_metrica
-                      : null
-                  );
-                  setFormData({
-                    valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
-                    valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
-                  });
-                }
-                  
-                }
-              />
+              {!disabled && (
+                <>
+                  <DeleteButton onClick={() => handleDeleteMetric(metric)} />
+                  <EditButton
+                    onClick={() => {
+                      console.log("metric", metric);
+                      setEditingEquipamentoMetrica(
+                        metric.equipamento_metrica
+                          ? metric.equipamento_metrica
+                          : null
+                      );
+                      setFormData({
+                        valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
+                        valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
+                      });
+                    }}
+                  />
+                </>
+              )}
             </Box>
           ))}
         </Box>
@@ -297,14 +397,17 @@ const ManageMetrics = () => {
           onChange={(id) =>
             setSelectedMetric(metrics.find((m) => m.id === id) || null)
           }
+          disabled={disabled}
           fullWidth
         />
-        <BaseButton
-          variant="contained"
-          onClick={() => setFormDataDialogOpen(true)}
-        >
-          + Adicionar
-        </BaseButton>
+        {!disabled && (
+          <BaseButton
+            variant="contained"
+            onClick={() => setFormDataDialogOpen(true)}
+          >
+            + Adicionar
+          </BaseButton>
+        )}
       </Box>
 
       <Dialog
@@ -314,22 +417,34 @@ const ManageMetrics = () => {
         aria-describedby="form-dialog-description"
       >
         <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-          <Input
-            label="Valor Mínimo"
-            type="number"
-            value={formData.valor_minimo}
-            onChange={(e) =>
-              setFormData({ ...formData, valor_minimo: Number(e.target.value) })
-            }
-          />
-          <Input
-            label="Valor Máximo"
-            type="number"
-            value={formData.valor_maximo}
-            onChange={(e) =>
-              setFormData({ ...formData, valor_maximo: Number(e.target.value) })
-            }
-          />
+          <Box>
+            <Input
+              label="Valor Mínimo"
+              type="number"
+              value={formData.valor_minimo || ''}
+              onChange={handleMinValueChange}
+              required
+            />
+            {validationErrors.valor_minimo && (
+              <span className="mt-1 text-xs text-red-500">
+                {validationErrors.valor_minimo}
+              </span>
+            )}
+          </Box>
+          <Box>
+            <Input
+              label="Valor Máximo"
+              type="number"
+              value={formData.valor_maximo || ''}
+              onChange={handleMaxValueChange}
+              required
+            />
+            {validationErrors.valor_maximo && (
+              <span className="mt-1 text-xs text-red-500">
+                {validationErrors.valor_maximo}
+              </span>
+            )}
+          </Box>
           <BaseButton onClick={( ) => { 
             if (editingEquipamentoMetrica) {
               handleUpdateEquipamentoMetrica();
@@ -341,6 +456,7 @@ const ManageMetrics = () => {
           <BaseCancelButton onClick={() => { 
             setFormDataDialogOpen(false);
             setEditingEquipamentoMetrica(null);
+            setValidationErrors({});
           }}>Cancelar</BaseCancelButton>
         </Box>
       </Dialog>
@@ -391,8 +507,9 @@ const ManageMetrics = () => {
             </Typography>
             <Typography variant="body2" component="div">
               <strong>id_equipamento:</strong> ID do equipamento (já preenchido automaticamente)<br />
-              <strong>id_metrica:</strong> ID da métrica específica (já preenchido automaticamente) - comentário mostra o nome e unidade<br />
-              <strong>valor:</strong> Valor bruto do sensor (0-4096) - substitua pelos valores reais
+              <strong>id_metrica:</strong> ID da métrica específica (já preenchido automaticamente)<br />
+              <strong>valor:</strong> Valor bruto do sensor (0-4096) - substitua pelos valores reais<br />
+              <strong>valor_convertido:</strong> Valor já convertido para a unidade correta da métrica (opcional) - pode ser null se não aplicável
             </Typography>
           </Box>
 

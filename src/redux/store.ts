@@ -5,6 +5,7 @@ import userReducer from './slices/userSlice';
 import equipamentosTableReducer from './slices/equipamentosTableSlice';
 import metricasTableReducer from './slices/metricasTableSlice';
 import clientesTableReducer from './slices/clientesTableSlice';
+import usersTableReducer from './slices/usersTableSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
     user: userReducer,
     equipamentosTable: equipamentosTableReducer,
     metricasTable: metricasTableReducer,
-    clientesTable: clientesTableReducer
+    clientesTable: clientesTableReducer,
+    usersTable: usersTableReducer
   },
 });
 

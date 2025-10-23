@@ -1,10 +1,11 @@
-import type { Usuario } from "./Usuario";
+import type { Cliente } from "./Cliente";
 
 export interface Equipamento {
   id: number;
   nome: string;
-  id_usuario: number;
+  id_cliente: number;
+  api_key?: string | null;
   //campos relacionados
-  cliente?: Usuario;
+  cliente?: Cliente;
   cliente_nome?: string;
 }

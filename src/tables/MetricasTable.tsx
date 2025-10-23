@@ -83,7 +83,8 @@ const MetricasTable = () => {
       </Stack>
      
         <DataGrid
-          rows={[...rows, ...rows, ...rows]}
+          rows={rows}
+          getRowId={(row) => row.id}
           columns={columns}
           rowHeight={40}
           sx={tableStyles}

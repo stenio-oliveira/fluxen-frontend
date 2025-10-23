@@ -104,11 +104,12 @@ const OptionsField: React.FC<OptionsFieldProps> = ({
       {open && (
         <div
           ref={optionsContainerRef}
-          className="w-full absolute mt-16 z-20 bg-white border border-gray-300 rounded-md shadow-lg min-h-[250px] p-1"
+          className="w-full absolute mt-16 z-20 bg-white border border-gray-300 rounded-md shadow-lg p-1"
+          style={{ maxHeight: `${4 * optionHeight}px` }}
         >
           {filteredOptions.length > 0 ? (
             <FixedSizeList
-              height={filteredOptions.length * optionHeight}
+              height={Math.min(filteredOptions.length * optionHeight, 4 * optionHeight)}
               width="100%"
               itemSize={optionHeight}
               itemCount={filteredOptions.length}
