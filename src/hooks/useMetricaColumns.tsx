@@ -1,12 +1,9 @@
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import React from 'react';
 import HeaderFilter from '../components/shared/HeaderFilter';
 import { Box, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { setDeletingMetrica, setEditingMetrica, setFilters } from '../redux/slices/metricasTableSlice';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import EditButton from '../components/shared/EditButton';
 import DeleteButton from '../components/shared/DeleteButton';
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, useTheme } from '@mui/material'
+import { Button } from '@mui/material'
 
 export const BaseButton = ({
   children,

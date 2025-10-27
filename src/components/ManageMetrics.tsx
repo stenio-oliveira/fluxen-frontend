@@ -71,7 +71,9 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
   }, []);
 
     const resetMetrics = () => {
-      setFormData({});
+      setFormData({
+        valor_minimo: 0
+      });
       setValidationErrors({});
       fetchMetricsCallback();
     };
@@ -421,7 +423,7 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
             <Input
               label="Valor Mínimo"
               type="number"
-              value={formData.valor_minimo || ''}
+              value={formData.valor_minimo || 0}
               onChange={handleMinValueChange}
               required
             />

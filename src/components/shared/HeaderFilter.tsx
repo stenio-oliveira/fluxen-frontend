@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextField, MenuItem, Select, InputAdornment } from "@mui/material";
+import { TextField } from "@mui/material";
 import { debounce } from "lodash";
 
 interface HeaderFilterProps {
@@ -87,7 +87,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
   if (type === "date"){ 
      return (
        <>
-         {["gte", "lte"].map((bound, i) => (
+         {["gte", "lte"].map((bound) => (
            <TextField
              variant="standard"
              fullWidth

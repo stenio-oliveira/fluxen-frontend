@@ -65,7 +65,7 @@ const equipamentosTableSlice = createSlice({
       state.deletingEquipamento = action.payload;
     },
     addEquipamento(state, action: PayloadAction<Equipamento>) {
-      state.rows.push(action.payload);
+      state.rows = [action.payload, ...state.rows];
     },
     replaceEquipamento(state, action: PayloadAction<Equipamento>) {
       const index = state.rows.findIndex((row) => row.id === action.payload.id);
