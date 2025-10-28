@@ -3,8 +3,8 @@ import { store } from './redux/store';
 import { logout } from './redux/slices/userSlice';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000', // Atualize com a URL do backend
-// baseURL: 'https://api.fluxen.cloud',
+  // baseURL: 'http://localhost:3000', // Atualize com a URL do backend
+  baseURL: 'https://api.fluxen.cloud',
 });
 
 api.interceptors.request.use((config) => {

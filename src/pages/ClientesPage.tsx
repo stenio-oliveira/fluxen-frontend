@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import ClientesTable from '../tables/ClientesTable';
 import StatsContainer from '../components/shared/StatsContainer';
 import StatsCard from '../components/shared/StatsCard';
-import { Business, Person, Assignment, Warning } from '@mui/icons-material';
+import { Business, Assignment } from '@mui/icons-material';
 import type { RootState } from '../redux/store';
 
 const ClientesPage: React.FC = () => {
@@ -12,7 +12,6 @@ const ClientesPage: React.FC = () => {
 
   const totalClientes = rows.length;
   const clientesComCnpj = rows.filter(cliente => cliente.cnpj).length;
-  const clientesSemResponsavel = rows.filter(cliente => !cliente.id_responsavel).length;
   // const clientesComEquipamentos = rows.filter(cliente => cliente.equipamento && cliente.equipamento.length > 0).length;
 
   return (
@@ -43,18 +42,7 @@ const ClientesPage: React.FC = () => {
           icon={<Assignment />}
           color="success"
         />
-        <StatsCard
-          title="Sem Responsável"
-          value={clientesSemResponsavel}
-          icon={<Warning />}
-          color="warning"
-        />
-        {/* <StatsCard
-          title="Com Equipamentos"
-          value={clientesComEquipamentos}
-          icon={<Person />}
-          color="info"
-        /> */}
+
       </StatsContainer>
 
       <Box sx={{ flex: 1, minHeight: 0 }}>

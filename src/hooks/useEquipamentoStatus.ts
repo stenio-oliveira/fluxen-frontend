@@ -29,7 +29,6 @@ export const useEquipamentoStatus = () => {
       const now = new Date();
 
       setStatus(prev => {
-        const wasOnline = prev.isOnline;
         const previousLogCount = prev.currentLogCount;
         
         // Se é a primeira verificação (currentLogCount = 0), considera online

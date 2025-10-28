@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import UsersTable from '../tables/UsersTable'
 import StatsContainer from '../components/shared/StatsContainer';
 import StatsCard from '../components/shared/StatsCard';
-import { People, AdminPanelSettings, Person, CheckCircle } from '@mui/icons-material';
+import { People, AdminPanelSettings, CheckCircle } from '@mui/icons-material';
 import type { RootState } from '../redux/store';
 
 const UsersPage = () => {

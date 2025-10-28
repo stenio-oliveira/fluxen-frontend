@@ -9,7 +9,7 @@ interface OnlineStatusCardProps {
   isRefreshing?: boolean;
 }
 
-const StyledCard = styled(Card)(({ theme, isOnline }: { theme: any; isOnline: boolean }) => ({
+const StyledCard = styled(Card)<{ isOnline: boolean }>(({ theme, isOnline }) => ({
   minHeight: 60,
   background: isOnline 
     ? `linear-gradient(135deg, ${theme.palette.success.main}15, ${theme.palette.success.main}05)`

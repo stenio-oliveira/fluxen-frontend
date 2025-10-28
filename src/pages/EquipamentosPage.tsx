@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import EquipamentosTable from "../tables/EquipamentosTable";
 import StatsContainer from '../components/shared/StatsContainer';
 import StatsCard from '../components/shared/StatsCard';
-import { Devices, CheckCircle, Warning, Speed } from '@mui/icons-material';
+import { Devices } from '@mui/icons-material';
 import type { RootState } from "../redux/store";
 
 const EquipamentosPage = () => {
