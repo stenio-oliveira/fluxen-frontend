@@ -68,6 +68,15 @@ class MetricaService {
   static deleteMetrica(id: number) {
     return api.delete(`${this.endpoint}/${id}`);
   }
+
+  static async getMetricasStats(): Promise<{
+    totalMetricas: number;
+    metricasAtivas: number;
+    unidadesUnicas: number;
+  }> {
+    const response = await api.get(`${this.endpoint}/stats`);
+    return response.data;
+  }
 }
 
 export default MetricaService;

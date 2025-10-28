@@ -14,6 +14,7 @@ import AnalyticsIcon from "@mui/icons-material/Analytics";
 import HomeRepairServiceIcon from "@mui/icons-material/HomeRepairService";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PeopleIcon from "@mui/icons-material/People";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
 import { logout } from "../../redux/slices/userSlice";
@@ -30,6 +31,11 @@ export default function SideMenu() {
   const isAdmin = user?.perfil_nome === 'ADM';
 
   const allLinks = [
+    {
+      name: "Dashboard",
+      link: "/",
+      icon: <DashboardIcon color="primary" />,
+    },
     {
       name: "Equipamentos",
       link: "/equipamentos",

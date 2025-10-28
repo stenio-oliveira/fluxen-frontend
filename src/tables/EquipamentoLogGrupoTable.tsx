@@ -1,5 +1,5 @@
-import { Box, Typography, Chip } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import { Box, Typography, Chip, Alert, Tooltip } from "@mui/material";
+import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import { useDispatch } from "react-redux";
 import { setFeedback } from "../redux/slices/feedBackSlice";
 import EquipamentoLogService from "../services/equipamentoLogService";
@@ -7,10 +7,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { tableStyles } from "../styles";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-
+import WarningIcon from "@mui/icons-material/Warning";
 interface TableData {
     columns: GridColDef[];
     rows: any[];
+    situation?: 'working' | 'frozen';
+    metrics: any[];
 }
 
 export default function EquipamentoLogGrupoTable() {
@@ -20,6 +22,45 @@ export default function EquipamentoLogGrupoTable() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+    const [situation, setSituation] = useState<'working' | 'frozen' | null>(null);
+
+    // Componente para renderizar célula com alerta
+    const MetricCell = (params: GridRenderCellParams) => {
+        const { value, field, row } = params;
+        const alertField = `${field}_alert`;
+
+        const alert = row[alertField] as 'min' | 'max' | 'none';
+
+        if (alert && alert !== 'none') {
+            const isMaxAlert = alert === 'max';
+            const message = isMaxAlert ? 'Valor muito próximo ou igual ao máximo permitido' : 'Valor muito próximo ou igual ao mínimo permitido';
+
+            return (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'center' }}>
+                    <Tooltip title={message}>
+                        <WarningIcon
+                            sx={{
+                                fontSize: 16,
+                                color: isMaxAlert ? 'error.main' : 'error.main'
+                            }}
+                        />
+                    </Tooltip>
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            color: isMaxAlert ? 'error.main' : 'warning.main',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {value}
+                    </Typography>
+                </Box>
+            );
+        }
+
+        return <Typography variant="body2">{value}</Typography>;
+    };
+
 
     const fetchTableData = useCallback(async (isAutoRefresh = false) => {
         if (!id) return;
@@ -32,7 +73,6 @@ export default function EquipamentoLogGrupoTable() {
 
         try {
             const tableData: TableData = await EquipamentoLogService.getLogsTableData(Number(id));
-
             // Ensure columns have proper formatting for DataGrid
             const formattedColumns: GridColDef[] = tableData.columns.map(col => {
                 const baseColumn = {
@@ -41,6 +81,7 @@ export default function EquipamentoLogGrupoTable() {
                     filterable: true,
                     resizable: true,
                 };
+
                 // Add valueGetter for dateTime columns to convert string to Date
                 if (col.type === 'dateTime') {
                     return {
@@ -51,11 +92,21 @@ export default function EquipamentoLogGrupoTable() {
                         }
                     };
                 }
+
+                // Add custom renderCell for metric columns to show alerts
+                if (col.field?.startsWith('metrica_')) {
+                    return {
+                        ...baseColumn,
+                        renderCell: MetricCell
+                    };
+                }
+
                 return baseColumn;
             });
 
             setColumns(formattedColumns);
             setRows(tableData.rows || []);
+            setSituation(tableData.situation ?? null);
         } catch (error: any) {
             dispatch(
                 setFeedback({
@@ -97,6 +148,13 @@ export default function EquipamentoLogGrupoTable() {
                 gap: 1,
             }}
         >
+            {/* Alerta de situação "frozen" */}
+            {situation === 'frozen' && (
+                <Alert severity="warning" variant="outlined" sx={{ mb: 1 }}>
+                    Equipamento sem variação nas últimas 5 leituras. Verifique possíveis falhas de leitura.
+                </Alert>
+            )}
+
             {/* Indicador de atualização automática */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                 <Chip

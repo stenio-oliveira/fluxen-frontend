@@ -8,23 +8,28 @@ import theme from "./theme";
      backgroundColor: "background.paper", // Theme-based background
    },
    "& .MuiDataGrid-cell": {
-     fontSize: "12px",
+     fontSize: "11px",
      borderBottom: "none", // Removes cell borders
+     padding: "4px 8px", // Reduced padding
+     lineHeight: 1.2,
    },
    "& .MuiDataGrid-columnHeaders": {
      "& .MuiDataGrid-columnHeader": {
-       maxHeight: "60px",
+       maxHeight: "40px", // Reduced header height
        backgroundColor: "white",
+       padding: "4px 8px", // Reduced padding
      },
      color: theme.palette.primary.main,
-     fontSize: "12px",
+     fontSize: "11px",
      fontWeight: "bold",
      borderTopLeftRadius: 0,
      borderTopRightRadius: 0,
+     minHeight: "40px !important",
    },
 
    "& .MuiDataGrid-row": {
      backgroundColor: "white",
+     minHeight: "32px !important", // Reduced row height
      "&:nth-of-type(even)": {
        backgroundColor: "#fafafa", // linhas pares
      },
@@ -34,8 +39,10 @@ import theme from "./theme";
    },
    "& .MuiDataGrid-footerContainer": {
      backgroundColor: "background.paper",
+     minHeight: "40px", // Reduced footer height
    },
    "& .MuiDataGrid-toolbarContainer": {
      backgroundColor: "background.paper",
+     minHeight: "40px", // Reduced toolbar height
    },
  };

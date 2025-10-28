@@ -57,7 +57,7 @@ const ClientesTable = () => {
   }, [fetchClientes]);
 
   return (
-    <Box sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 1 }}>
+    <Box sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 0.5 }}>
       <Stack direction="row" justifyContent="space-between">
         <Search onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeGeneralFilter(e.target.value)} />
         <BaseCreateButton onClick={() => dispatch(setCreatingCliente(true))} />
@@ -65,7 +65,7 @@ const ClientesTable = () => {
       <DataGrid
         rows={rows}
         columns={columns}
-        rowHeight={40}
+        rowHeight={32}
         sx={tableStyles}
         initialState={{
           pagination: {

@@ -2,10 +2,13 @@ import { Box, Typography, Button } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EquipamentoLogGrupoTable from "../tables/EquipamentoLogGrupoTable";
+import OnlineStatusCard from "../components/shared/OnlineStatusCard";
+import { useEquipamentoStatus } from "../hooks/useEquipamentoStatus";
 
 const EquipamentoLogsPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { isOnline, lastUpdate, isRefreshing } = useEquipamentoStatus();
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", p: 4, width: "90vw" }}>
@@ -20,7 +23,7 @@ const EquipamentoLogsPage = () => {
           >
             Voltar
           </Button>
-          <Box>
+          <Box sx={{ flex: 1 }}>
             <Typography variant="h5" color="primary" fontWeight="bold">
               Logs do Equipamento #{id}
             </Typography>
@@ -28,6 +31,15 @@ const EquipamentoLogsPage = () => {
               Histórico de métricas e valores convertidos
             </Typography>
           </Box>
+        </Box>
+
+        {/* Status Card */}
+        <Box sx={{ mb: 3 }}>
+          <OnlineStatusCard
+            isOnline={isOnline}
+            lastUpdate={lastUpdate}
+            isRefreshing={isRefreshing}
+          />
         </Box>
 
         {/* Tabela de Logs */}

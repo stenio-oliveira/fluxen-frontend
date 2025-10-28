@@ -43,7 +43,12 @@ const ClienteForm = () => {
     if (!formData.nome) {
       dispatch(setFeedback({ message: 'Preencha todos os campos obrigatórios', type: 'error' }));
       return;
-    };
+    }
+
+    if (!formData.id_responsavel) {
+      dispatch(setFeedback({ message: 'Selecione um usuário responsável', type: 'error' }));
+      return;
+    }
     try {
       if (creatingCliente) {
         const cliente = await ClienteService.createCliente(formData);
@@ -118,6 +123,7 @@ const ClienteForm = () => {
           options={userOptions}
           value={formData.id_responsavel || ''}
           onChange={handleResponsavelChange}
+          required={true}
         />
       </Box>
       <Stack direction="row" spacing={2}>

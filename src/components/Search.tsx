@@ -23,15 +23,16 @@ const Search: React.FC<SearchProps> = ({ onChange }) => {
       sx={{
         display: "flex",
         alignItems: "center",
-        px: 2,
-        py: 1,
+        px: 1.5,
+        py: 0.5,
         bgcolor: "background.paper",
         borderRadius: 1,
         boxShadow: 1,
         width: "fit-content",
+        minHeight: 36,
       }}
     >
-      <SearchIcon sx={{ mr: 1, color: "action.active" }} />
+      <SearchIcon sx={{ mr: 1, color: "action.active", fontSize: 18 }} />
       <TextField
         placeholder="Pesquisar"
         variant="standard"
@@ -41,9 +42,12 @@ const Search: React.FC<SearchProps> = ({ onChange }) => {
         InputProps={{
           disableUnderline: true,
           sx: {
-            fontSize: "14px",
-            fontWeight: "bold",
+            fontSize: "13px",
+            fontWeight: 500,
             color: "text.primary",
+            '& input': {
+              padding: '4px 0',
+            },
           },
         }}
       />

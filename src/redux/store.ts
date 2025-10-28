@@ -4,6 +4,7 @@ import sideMenuReducer from './slices/sideMenuSlice';
 import userReducer from './slices/userSlice';
 import equipamentosTableReducer from './slices/equipamentosTableSlice';
 import metricasTableReducer from './slices/metricasTableSlice';
+import metricasStatsReducer from './slices/metricasStatsSlice';
 import clientesTableReducer from './slices/clientesTableSlice';
 import usersTableReducer from './slices/usersTableSlice';
 
@@ -14,6 +15,7 @@ export const store = configureStore({
     user: userReducer,
     equipamentosTable: equipamentosTableReducer,
     metricasTable: metricasTableReducer,
+    metricasStats: metricasStatsReducer,
     clientesTable: clientesTableReducer,
     usersTable: usersTableReducer
   },
