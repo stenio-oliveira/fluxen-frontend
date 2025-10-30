@@ -30,10 +30,13 @@ export const useEquipamentoStatus = () => {
 
       setStatus(prev => {
         const previousLogCount = prev.currentLogCount;
-        
-        // Se é a primeira verificação (currentLogCount = 0), considera online
-        const isOnline = previousLogCount === 0 ? true : newLogCount > previousLogCount;
-        
+
+        // Se não há nenhum log, o equipamento deve estar offline
+        const isOnline = newLogCount === 0
+          ? false
+          // Se existem logs, considera online quando houver aumento de logs
+          : (previousLogCount === 0 ? true : newLogCount > previousLogCount);
+
         return {
           isOnline,
           lastUpdate: now,
