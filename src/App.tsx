@@ -8,7 +8,7 @@ import theme from './theme';
 import SnackBar from './components/shared/SnackBar';
 import { login, setAuthChecking } from './redux/slices/userSlice';
 import type { Usuario } from './types/Usuario';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import type { RootState } from './redux/store';
 
@@ -16,28 +16,48 @@ import type { RootState } from './redux/store';
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
   const { isAuthChecking } = useSelector((state: RootState) => state.user);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Verifica se há dados do usuário no localStorage
+    const isJwtValid = (jwtToken: string): boolean => {
+      try {
+        const payloadBase64 = jwtToken.split('.')[1];
+        if (!payloadBase64) return false;
+        const payloadJson = atob(payloadBase64);
+        const payload = JSON.parse(payloadJson);
+        if (!payload.exp) return false;
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        return payload.exp > nowSeconds;
+      } catch {
+        return false;
+      }
+    };
+
+    // Verifica se há dados do usuário no localStorage e validade do token
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
 
-    if (token && userData) {
+    if (token && userData && isJwtValid(token)) {
       try {
         const user: Usuario = JSON.parse(userData);
         dispatch(login({ user }));
       } catch (error) {
         console.error('Erro ao parsear dados do usuário:', error);
-        // Remove dados inválidos do localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         dispatch(setAuthChecking(false));
+        navigate('/auth', { replace: true });
       }
     } else {
-      // Se não há token ou userData, marca como verificação concluída
+      // Token ausente/inválido: limpar e redirecionar para autenticação
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       dispatch(setAuthChecking(false));
+      if (window.location.pathname !== '/auth' && window.location.pathname !== '/register') {
+        navigate('/auth', { replace: true });
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
   // Mostrar loading enquanto verifica autenticação
   if (isAuthChecking) {

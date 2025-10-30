@@ -14,8 +14,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Rota padrão - Dashboard */}
-      <Route path="/" element={<HomePage />} />
+      {/* Rota padrão - Dashboard (protegida) */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <HomePage />
+        </ProtectedRoute>
+      } />
 
       {/* Redirecionamento para dashboard */}
       <Route path="/dashboard" element={<Navigate to="/" replace />} />
@@ -24,10 +28,22 @@ const AppRoutes: React.FC = () => {
       <Route path="/auth" element={<LoginPage />} />
       <Route path='/register' element={<RegisterPage />} />
 
-      {/* Rotas principais */}
-      <Route path="/equipamentos" element={<EquipamentosPage />} />
-      <Route path="/equipamentos/:id" element={<EquipamentoDetailPage />} />
-      <Route path="/equipamentos/:id/logs" element={<EquipamentoLogsPage />} />
+      {/* Rotas principais (protegidas) */}
+      <Route path="/equipamentos" element={
+        <ProtectedRoute>
+          <EquipamentosPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/equipamentos/:id" element={
+        <ProtectedRoute>
+          <EquipamentoDetailPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/equipamentos/:id/logs" element={
+        <ProtectedRoute>
+          <EquipamentoLogsPage />
+        </ProtectedRoute>
+      } />
 
       {/* Rotas protegidas para ADM */}
       <Route path="/clientes" element={
