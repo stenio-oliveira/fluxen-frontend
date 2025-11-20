@@ -1,18 +1,26 @@
 import { Box, Typography, Chip, Alert, Tooltip } from "@mui/material";
-import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
+import { DataGrid, type GridColDef, type GridRenderCellParams, type GridPaginationModel } from "@mui/x-data-grid";
 import { useDispatch } from "react-redux";
 import { setFeedback } from "../redux/slices/feedBackSlice";
 import EquipamentoLogService from "../services/equipamentoLogService";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { tableStyles } from "../styles";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WarningIcon from "@mui/icons-material/Warning";
+interface PaginationMeta {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+}
+
 interface TableData {
     columns: GridColDef[];
     rows: any[];
     situation?: 'working' | 'frozen';
     metrics: any[];
+    pagination?: PaginationMeta;
 }
 
 export default function EquipamentoLogGrupoTable() {
@@ -23,6 +31,16 @@ export default function EquipamentoLogGrupoTable() {
     const [loading, setLoading] = useState(false);
     const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
     const [situation, setSituation] = useState<'working' | 'frozen' | null>(null);
+    const [rowCount, setRowCount] = useState(0);
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+        page: 0,
+        pageSize: 50
+    });
+    const paginationModelRef = useRef<GridPaginationModel>(paginationModel);
+
+    useEffect(() => {
+        paginationModelRef.current = paginationModel;
+    }, [paginationModel]);
 
     // Componente para renderizar célula com alerta
     const MetricCell = (params: GridRenderCellParams) => {
@@ -36,7 +54,7 @@ export default function EquipamentoLogGrupoTable() {
             const message = isMaxAlert ? 'Valor muito próximo ou igual ao máximo permitido' : 'Valor muito próximo ou igual ao mínimo permitido';
 
             return (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'end' }}>
                     <Tooltip title={message}>
                         <WarningIcon
                             sx={{
@@ -62,17 +80,21 @@ export default function EquipamentoLogGrupoTable() {
     };
 
 
-    const fetchTableData = useCallback(async (isAutoRefresh = false) => {
+    const fetchTableData = useCallback(async (model?: GridPaginationModel, isAutoRefresh = false) => {
         if (!id) return;
+
+        const currentPagination = model ?? paginationModelRef.current;
 
         if (isAutoRefresh) {
             setIsAutoRefreshing(true);
         } else {
             setLoading(true);
         }
-
         try {
-            const tableData: TableData = await EquipamentoLogService.getLogsTableData(Number(id));
+            const tableData: TableData = await EquipamentoLogService.getLogsTableData(Number(id), {
+                page: currentPagination.page + 1,
+                pageSize: currentPagination.pageSize
+            });
             // Ensure columns have proper formatting for DataGrid
             const formattedColumns: GridColDef[] = tableData.columns.map(col => {
                 const baseColumn = {
@@ -107,6 +129,21 @@ export default function EquipamentoLogGrupoTable() {
             setColumns(formattedColumns);
             setRows(tableData.rows || []);
             setSituation(tableData.situation ?? null);
+            setRowCount(tableData.pagination?.totalItems ?? tableData.rows?.length ?? 0);
+
+            if (tableData.pagination) {
+                const serverModel: GridPaginationModel = {
+                    page: Math.max(tableData.pagination.page - 1, 0),
+                    pageSize: tableData.pagination.pageSize
+                };
+
+                if (
+                    serverModel.page !== paginationModel.page ||
+                    serverModel.pageSize !== paginationModel.pageSize
+                ) {
+                    setPaginationModel(serverModel);
+                }
+            }
         } catch (error: any) {
             dispatch(
                 setFeedback({
@@ -129,7 +166,7 @@ export default function EquipamentoLogGrupoTable() {
 
         // Configurar fetch automático a cada 10 segundos
         const interval = setInterval(() => {
-            fetchTableData(true); // true indica que é um refresh automático
+            fetchTableData(undefined, true); // true indica que é um refresh automático
         }, 10000); // 10 segundos
 
         // Cleanup: limpar o interval quando o componente for desmontado
@@ -178,13 +215,13 @@ export default function EquipamentoLogGrupoTable() {
                 sx={tableStyles}
                 loading={loading}
                 getRowId={(row) => row.id}
-                initialState={{
-                    pagination: {
-                        paginationModel: {
-                            pageSize: 50,
-                        },
-                    },
+                paginationMode="server"
+                paginationModel={paginationModel}
+                onPaginationModelChange={(model) => {
+                    setPaginationModel(model);
+                    fetchTableData(model);
                 }}
+                rowCount={rowCount}
                 checkboxSelection={false}
                 pageSizeOptions={[25, 50, 100]}
                 disableRowSelectionOnClick

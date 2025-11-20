@@ -24,8 +24,11 @@ export const useEquipamentoStatus = () => {
     setStatus(prev => ({ ...prev, isRefreshing: isAutoRefresh }));
 
     try {
-      const tableData = await EquipamentoLogService.getLogsTableData(Number(id));
-      const newLogCount = tableData.rows?.length || 0;
+      const tableData = await EquipamentoLogService.getLogsTableData(Number(id), {
+        page: 1,
+        pageSize: 5
+      });
+      const newLogCount = tableData.pagination?.totalItems ?? tableData.rows?.length ?? 0;
       const now = new Date();
 
       setStatus(prev => {

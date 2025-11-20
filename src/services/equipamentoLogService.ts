@@ -1,20 +1,17 @@
 import api from '../api';
 
+interface LogsTableParams {
+  page?: number;
+  pageSize?: number;
+}
+
 class EquipamentoLogService {
   static endpoint = "api/equipamento-logs";
 
-  static async getLogsTableData(id_equipamento: number): Promise<any> {
-    const response = await api.get(`${this.endpoint}/table/${id_equipamento}`);
-    return response.data;
-  }
-
-  static async getEquipamentoLogs(): Promise<any[]> {
-    const response = await api.get(this.endpoint);
-    return response.data;
-  }
-
-  static async getEquipamentoLogById(id: number): Promise<any> {
-    const response = await api.get(`${this.endpoint}/${id}`);
+  static async getLogsTableData(id_equipamento: number, params?: LogsTableParams): Promise<any> {
+    const response = await api.get(`${this.endpoint}/table/${id_equipamento}`, {
+      params
+    });
     return response.data;
   }
 }
