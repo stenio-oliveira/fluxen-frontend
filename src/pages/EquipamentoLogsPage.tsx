@@ -1,4 +1,4 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, useMediaQuery, useTheme } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EquipamentoLogGrupoTable from "../tables/EquipamentoLogGrupoTable";
@@ -9,32 +9,62 @@ const EquipamentoLogsPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { isOnline, lastUpdate, isRefreshing } = useEquipamentoStatus();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", p: 4, width: "90vw" }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "grey.50",
+        p: isMobile ? 2 : 4,
+        width: isMobile ? "100vw" : "90vw",
+        maxWidth: "100%",
+        boxSizing: "border-box",
+      }}
+    >
       <Box sx={{ maxWidth: "100%", mx: "auto" }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: isMobile ? "flex-start" : "center",
+            gap: isMobile ? 1 : 2,
+            mb: isMobile ? 2 : 3,
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
           <Button
             onClick={() => navigate(-1)}
             variant="outlined"
             startIcon={<ArrowBackIcon />}
-            size="small"
+            size={isMobile ? "small" : "medium"}
+            sx={{
+              alignSelf: isMobile ? "flex-start" : "center",
+            }}
           >
             Voltar
           </Button>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" color="primary" fontWeight="bold">
+          <Box sx={{ flex: 1, width: "100%" }}>
+            <Typography
+              variant={isMobile ? "h6" : "h5"}
+              color="primary"
+              fontWeight="bold"
+              sx={{ mb: 0.5 }}
+            >
               Logs do Equipamento #{id}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant={isMobile ? "caption" : "body2"}
+              color="text.secondary"
+            >
               Histórico de métricas e valores convertidos
             </Typography>
           </Box>
         </Box>
 
         {/* Status Card */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: isMobile ? 2 : 3 }}>
           <OnlineStatusCard
             isOnline={isOnline}
             lastUpdate={lastUpdate}
@@ -42,14 +72,16 @@ const EquipamentoLogsPage = () => {
           />
         </Box>
 
-        {/* Tabela de Logs */}
+        {/* Tabela/Cards de Logs */}
         <Box
           sx={{
             bgcolor: "white",
-            borderRadius: 2,
+            borderRadius: isMobile ? 1 : 2,
             border: "1px solid #e0e0e0",
-            p: 2,
+            p: isMobile ? 1 : 2,
             boxShadow: "none",
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <EquipamentoLogGrupoTable />
