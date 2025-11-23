@@ -45,10 +45,16 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           setStringValue(e.target.value);
           debounced(field, e.target.value);
         }}
+        autoComplete="off"
         slotProps={{
+          htmlInput: {
+            autoComplete: "off",
+            autoCorrect: "off",
+            autoCapitalize: "off",
+            spellCheck: "false",
+          },
           input: {
             sx: { fontSize: 12 },
-            
           },
         }}
         placeholder={label}
@@ -71,7 +77,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           setStringValue(e.target.value);
           debounced(field, e.target.value);
         }}
+        autoComplete="off"
         slotProps={{
+          htmlInput: {
+            autoComplete: "off",
+            autoCorrect: "off",
+            autoCapitalize: "off",
+            spellCheck: "false",
+          },
           input: {
             sx: { fontSize: 12 },
           },
@@ -93,9 +106,11 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
              fullWidth
              type="date"
              onClick={handleClick}
+             autoComplete="off"
              slotProps={{
                input: {
                  sx: { fontSize: 12 },
+                 autoComplete: "off",
                },
              }}
              value={(bound === "gte" ? gte : lte) ?? ""}

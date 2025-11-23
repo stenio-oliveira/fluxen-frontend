@@ -8,17 +8,20 @@ import type { RootState } from "../redux/store";
 import { setFeedback } from "../redux/slices/feedBackSlice";
 import EquipamentoService from "../services/equipamentoService";
 import { removeEquipamento, setCreatingEquipamento, setDeletingEquipamento, setFilters, setRows } from "../redux/slices/equipamentosTableSlice";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogTitle, Stack } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { BaseCreateButton } from "../components/shared/BaseCreateButton";
 import EquipamentoForm from "../components/EquipamentoForm";
 import BaseDeleteDialog from "../components/shared/BaseDeleteDialog";
 import { useClientOptions } from "../hooks/useClientOptions";
+import EquipmentsCardView from "../components/equipamentos/EquipmentsCardView";
 
 export default function EquipamentosTable() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {user} = useSelector((state: RootState) => state.user);
   console.log("user", user)
   const {columns } = useEquipamentoColumns();
@@ -27,6 +30,14 @@ export default function EquipamentosTable() {
 
   // Verificar se o usuário é ADM
   const isAdmin = user?.perfil_nome === 'ADM';
+
+  // Paginação para mobile
+  const [cardPage, setCardPage] = useState(1);
+  const itemsPerPage = isMobile ? 10 : 100;
+  const totalPages = Math.ceil(rows.length / itemsPerPage);
+  const startIndex = (cardPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRows = isMobile ? rows.slice(startIndex, endIndex) : rows;
 
   const changeGeneralFilter = (value: string ) => { 
       dispatch(setFilters({ 
@@ -90,7 +101,18 @@ export default function EquipamentosTable() {
   useEffect(() => { 
     fetchEquipments();
   }, [fetchEquipments]);
+
+  // Resetar página quando os filtros mudarem
+  useEffect(() => {
+    setCardPage(1);
+  }, [filters]);
   
+  const handleCardPageChange = (newPage: number) => {
+    setCardPage(newPage);
+    // Scroll para o topo quando mudar de página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <Box
       sx={{
@@ -98,10 +120,17 @@ export default function EquipamentosTable() {
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: 0.5,
+        gap: isMobile ? 1 : 0.5,
       }}
     >
-      <Stack direction="row" justifyContent="space-between">
+      <Stack 
+        direction={isMobile ? "column" : "row"} 
+        justifyContent="space-between"
+        gap={isMobile ? 1 : 0}
+        sx={{
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+        }}
+      >
         <Search
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             changeGeneralFilter(e.target.value)
@@ -114,27 +143,39 @@ export default function EquipamentosTable() {
         )}
       </Stack>
 
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        rowHeight={32}
-        sx={tableStyles}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 100,
+      {/* Renderização condicional: Cards no mobile, Tabela no desktop */}
+      {isMobile ? (
+        <EquipmentsCardView
+          equipments={paginatedRows}
+          loading={false}
+          isAdmin={isAdmin}
+          page={cardPage}
+          totalPages={totalPages}
+          onPageChange={handleCardPageChange}
+        />
+      ) : (
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          rowHeight={32}
+          sx={tableStyles}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 100,
+              },
             },
-          },
-        }}
-        // onRowClick={() => navigate("/equipamentos/1")}
-        onCellClick={(params) =>{ 
-          handleCellClick(params);
-        }}
-        checkboxSelection={false}
-        pageSizeOptions={[100]}
-        disableRowSelectionOnClick
-        hideFooter={false}
-      />
+          }}
+          // onRowClick={() => navigate("/equipamentos/1")}
+          onCellClick={(params) =>{ 
+            handleCellClick(params);
+          }}
+          checkboxSelection={false}
+          pageSizeOptions={[100]}
+          disableRowSelectionOnClick
+          hideFooter={false}
+        />
+      )}
 
       <Dialog
         open={creatingEquipamento || editingEquipamento !== null}

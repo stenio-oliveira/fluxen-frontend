@@ -39,6 +39,7 @@ const Search: React.FC<SearchProps> = ({ onChange }) => {
         value={localSearch}
         fullWidth
         onChange={handleLocalChange}
+        autoComplete="off"
         InputProps={{
           disableUnderline: true,
           sx: {
@@ -48,6 +49,15 @@ const Search: React.FC<SearchProps> = ({ onChange }) => {
             '& input': {
               padding: '4px 0',
             },
+          },
+        }}
+        slotProps={{
+          htmlInput: {
+            autoComplete: "off",
+            autoCorrect: "off",
+            autoCapitalize: "off",
+            spellCheck: "false",
+            inputMode: "text",
           },
         }}
       />

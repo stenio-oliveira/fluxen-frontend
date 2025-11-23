@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import MetricaService from "../services/metricaService";
 import { setFeedback } from "../redux/slices/feedBackSlice";
-import { Typography, Box, Dialog, Divider, Stack, IconButton, Tooltip } from "@mui/material";
+import { Typography, Box, Dialog, Divider, Stack, IconButton, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import type { Metrica } from "../types/Metrica";
 import type { Option } from "../types/Option";
 import OptionsField from "./shared/OptionsField";
@@ -24,6 +24,8 @@ interface ManageMetricsProps {
 
 const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { id } = useParams();
   const [metrics, setMetrics] = React.useState<Metrica[]>([]);
   const [associatedMetrics, setAssociatedMetrics] = React.useState<Metrica[]>([]);
@@ -292,15 +294,32 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
 
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h6" color="primary" fontWeight={"bold"}>
+    <Box sx={{ p: isMobile ? 1 : 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: isMobile ? 1.5 : 2,
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          gap: isMobile ? 1 : 0,
+        }}
+      >
+        <Typography
+          variant={isMobile ? "subtitle1" : "h6"}
+          color="primary"
+          fontWeight={"bold"}
+          sx={{
+            fontSize: isMobile ? "0.95rem" : "1.25rem",
+          }}
+        >
           Métricas Associadas
         </Typography>
         {associatedMetrics.length > 0 && (
           <Tooltip title="Ver modelo de payload para envio de dados">
             <IconButton
               onClick={() => setPayloadDialogOpen(true)}
+              size={isMobile ? "small" : "medium"}
               sx={{
                 color: "primary.main",
                 border: "1px solid",
@@ -311,84 +330,222 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
                 }
               }}
             >
-              <CodeIcon />
+              <CodeIcon fontSize={isMobile ? "small" : "medium"} />
             </IconButton>
           </Tooltip>
         )}
       </Box>
-      <Box sx={{ mb: 2 }}>
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-          {associatedMetrics.map((metric) => (
-            <Box
-              key={metric.id}
-              sx={{
-                display: "flex",
-                gap: 0.5,
-                alignItems: "center",
-                padding: "4px 8px",
-                borderRadius: "16px",
-                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-              }}
-            >
-              <Typography
-                color="primary"
-                variant="body2"
-                fontSize={"small"}
-                sx={{ fontWeight: "500" }}
+      <Box sx={{ mb: isMobile ? 1.5 : 2 }}>
+        {isMobile ? (
+          // Layout mobile: Cards individuais
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {associatedMetrics.map((metric) => (
+              <Box
+                key={metric.id}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                  padding: 1.5,
+                  borderRadius: 2,
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e0e0e0",
+                  bgcolor: "white",
+                }}
               >
-                {metric.nome} ({metric.unidade})
-              </Typography>
-              <Divider
-                orientation="vertical"
-                sx={{ color: "primary" }}
-                flexItem
-              />
-              <Stack direction="row" spacing={1}>
-                <Typography variant="body2" fontSize={"12px"}>
-                  Mín {metric.valor_minimo}
+                {/* Header com nome e ações */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 1,
+                  }}
+                >
+                  <Typography
+                    color="primary"
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: "600",
+                      fontSize: "0.9rem",
+                      wordBreak: "break-word",
+                      flex: 1,
+                    }}
+                  >
+                    {metric.nome} ({metric.unidade})
+                  </Typography>
+                  {!disabled && (
+                    <Box sx={{ display: "flex", gap: 0.5 }}>
+                      <EditButton
+                        onClick={() => {
+                          console.log("metric", metric);
+                          setEditingEquipamentoMetrica(
+                            metric.equipamento_metrica
+                              ? metric.equipamento_metrica
+                              : null
+                          );
+                          setFormData({
+                            valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
+                            valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
+                          });
+                        }}
+                      />
+                      <DeleteButton onClick={() => handleDeleteMetric(metric)} />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Valores Min e Máx */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    alignItems: "center",
+                    pt: 0.5,
+                    borderTop: "1px solid #e0e0e0",
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", fontSize: "0.7rem" }}
+                    >
+                      Mínimo
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: "0.85rem",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {metric.valor_minimo}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", fontSize: "0.7rem" }}
+                    >
+                      Máximo
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: "0.85rem",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {metric.valor_maximo}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          // Layout desktop: Chips compactos
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+            {associatedMetrics.map((metric) => (
+              <Box
+                key={metric.id}
+                sx={{
+                  display: "flex",
+                  gap: 0.75,
+                  alignItems: "center",
+                  padding: "4px 8px",
+                  borderRadius: "16px",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e0e0e0",
+                }}
+              >
+                <Typography
+                  color="primary"
+                  variant="body2"
+                  sx={{
+                    fontWeight: "500",
+                    fontSize: "0.875rem",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {metric.nome} ({metric.unidade})
                 </Typography>
                 <Divider
                   orientation="vertical"
                   sx={{ color: "primary" }}
                   flexItem
                 />
-                <Typography variant="body2" fontSize={"12px"}>
-                  Máx {metric.valor_maximo}
-                </Typography>
-              </Stack>
-              {!disabled && (
-                <>
-                  <DeleteButton onClick={() => handleDeleteMetric(metric)} />
-                  <EditButton
-                    onClick={() => {
-                      console.log("metric", metric);
-                      setEditingEquipamentoMetrica(
-                        metric.equipamento_metrica
-                          ? metric.equipamento_metrica
-                          : null
-                      );
-                      setFormData({
-                        valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
-                        valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
-                      });
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: "12px"
                     }}
+                  >
+                    Mín {metric.valor_minimo}
+                  </Typography>
+                  <Divider
+                    orientation="vertical"
+                    sx={{ color: "primary" }}
+                    flexItem
                   />
-                </>
-              )}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: "12px"
+                    }}
+                  >
+                    Máx {metric.valor_maximo}
+                  </Typography>
+                </Stack>
+                {!disabled && (
+                  <>
+                    <DeleteButton onClick={() => handleDeleteMetric(metric)} />
+                    <EditButton
+                      onClick={() => {
+                        console.log("metric", metric);
+                        setEditingEquipamentoMetrica(
+                          metric.equipamento_metrica
+                            ? metric.equipamento_metrica
+                            : null
+                        );
+                        setFormData({
+                          valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
+                          valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
+                        });
+                      }}
+                    />
+                  </>
+                )}
+              </Box>
+            ))}
             </Box>
-          ))}
-        </Box>
+        )}
       </Box>
       <Box
         sx={{
-          minHeight: 300,
+          minHeight: isMobile ? 200 : 300,
           display: "flex",
           flexDirection: "column",
           gap: 2,
         }}
       >
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography
+          variant={isMobile ? "body2" : "subtitle1"}
+          gutterBottom
+          sx={{
+            fontSize: isMobile ? "0.875rem" : "1rem",
+            fontWeight: isMobile ? "500" : "600",
+          }}
+        >
           Adicionar Nova Métrica:
         </Typography>
 
@@ -406,6 +563,9 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
           <BaseButton
             variant="contained"
             onClick={() => setFormDataDialogOpen(true)}
+            sx={{
+              fontSize: isMobile ? "0.875rem" : "1rem",
+            }}
           >
             + Adicionar
           </BaseButton>
@@ -417,8 +577,10 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
         onClose={() => setFormDataDialogOpen(false)}
         aria-labelledby="form-dialog-title"
         aria-describedby="form-dialog-description"
+        fullWidth
+        maxWidth={isMobile ? "sm" : "md"}
       >
-        <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ p: isMobile ? 1.5 : 2, display: "flex", flexDirection: "column", gap: 2 }}>
           <Box>
             <Input
               label="Valor Mínimo"
@@ -467,13 +629,30 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
       <Dialog
         open={payloadDialogOpen}
         onClose={() => setPayloadDialogOpen(false)}
-        maxWidth="md"
+        maxWidth={isMobile ? "sm" : "md"}
         fullWidth
         aria-labelledby="payload-dialog-title"
       >
-        <Box sx={{ p: 3 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Typography variant="h6" id="payload-dialog-title" color="primary" fontWeight="bold">
+        <Box sx={{ p: isMobile ? 2 : 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: isMobile ? 1.5 : 2,
+              flexWrap: isMobile ? "wrap" : "nowrap",
+              gap: isMobile ? 1 : 0,
+            }}
+          >
+            <Typography
+              variant={isMobile ? "subtitle1" : "h6"}
+              id="payload-dialog-title"
+              color="primary"
+              fontWeight="bold"
+              sx={{
+                fontSize: isMobile ? "0.95rem" : "1.25rem",
+              }}
+            >
               📡 Modelo de Payload para Envio de Dados
             </Typography>
             <Tooltip title="Copiar JSON">
@@ -483,7 +662,14 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
             </Tooltip>
           </Box>
 
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mb: isMobile ? 1.5 : 2,
+              fontSize: isMobile ? "0.75rem" : "0.875rem",
+            }}
+          >
             Use este modelo JSON para enviar dados do equipamento. Substitua os valores de exemplo pelos valores reais dos sensores.
           </Typography>
 
@@ -492,9 +678,9 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
               backgroundColor: "#f5f5f5",
               border: "1px solid #e0e0e0",
               borderRadius: 1,
-              p: 2,
+              p: isMobile ? 1.5 : 2,
               fontFamily: "monospace",
-              fontSize: "12px",
+              fontSize: isMobile ? "10px" : "12px",
               overflow: "auto",
               maxHeight: "400px",
               whiteSpace: "pre-wrap"

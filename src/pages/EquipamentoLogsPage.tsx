@@ -18,6 +18,7 @@ const EquipamentoLogsPage = () => {
         minHeight: "100vh",
         bgcolor: "grey.50",
         p: isMobile ? 2 : 4,
+        pt: isMobile ? 6 : 4, // Padding-top maior no mobile para evitar sobreposição do botão de navegação
         width: isMobile ? "100vw" : "90vw",
         maxWidth: "100%",
         boxSizing: "border-box",
@@ -32,19 +33,10 @@ const EquipamentoLogsPage = () => {
             gap: isMobile ? 1 : 2,
             mb: isMobile ? 2 : 3,
             flexDirection: isMobile ? "column" : "row",
+            justifyContent: "space-between",
+            mt: isMobile ? 1 : 0, // Margem superior adicional no mobile
           }}
         >
-          <Button
-            onClick={() => navigate(-1)}
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            size={isMobile ? "small" : "medium"}
-            sx={{
-              alignSelf: isMobile ? "flex-start" : "center",
-            }}
-          >
-            Voltar
-          </Button>
           <Box sx={{ flex: 1, width: "100%" }}>
             <Typography
               variant={isMobile ? "h6" : "h5"}
@@ -61,6 +53,17 @@ const EquipamentoLogsPage = () => {
               Histórico de métricas e valores convertidos
             </Typography>
           </Box>
+          <Button
+            onClick={() => navigate(-1)}
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            size={isMobile ? "small" : "medium"}
+            sx={{
+              alignSelf: isMobile ? "flex-start" : "center",
+            }}
+          >
+            Voltar
+          </Button>
         </Box>
 
         {/* Status Card */}

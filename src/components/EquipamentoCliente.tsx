@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, useMediaQuery, useTheme } from "@mui/material";
 import { useParams } from "react-router-dom";
 import EquipamentoService from "../services/equipamentoService";
 import type { Cliente } from "../types/Cliente";
@@ -20,6 +20,8 @@ interface EquipamentoClienteProps {
 
 const EquipamentoCliente: React.FC<EquipamentoClienteProps> = ({ disabled = false }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { id }  = useParams();
   const [editingClient, setEditingClient] = useState(false);
   const [clienteInfo, setClientInfo] = useState<Partial<Cliente>>({});
@@ -76,14 +78,15 @@ const EquipamentoCliente: React.FC<EquipamentoClienteProps> = ({ disabled = fals
     <Card
       variant="outlined"
       sx={{
-        maxWidth: 400,
+        maxWidth: isMobile ? "100%" : 400,
+        width: "100%",
         boxShadow: "none",
         position: "relative",
         borderRadius: 2,
         border: "1px solid #e0e0e0"
       }}
     >
-      <CardContent sx={{ p: 2 }}>
+      <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
         {/* Verifica se há cliente associado */}
         {clienteInfo.id ? (
           /* Demais campos */
@@ -146,9 +149,21 @@ const EquipamentoCliente: React.FC<EquipamentoClienteProps> = ({ disabled = fals
       )}
        {/* Dialog para selecionar o cliente atrelado */}
 
-      <Dialog open={editingClient} onClose={() => setEditingClient(false)} maxWidth="md" fullWidth={true}>
-         <DialogTitle sx={{color: 'primary.main'}}>Selecionar Cliente associado</DialogTitle>
-         <DialogContent sx={{minHeight: 300}}>
+      <Dialog 
+        open={editingClient} 
+        onClose={() => setEditingClient(false)} 
+        maxWidth={isMobile ? "sm" : "md"} 
+        fullWidth={true}
+      >
+         <DialogTitle 
+           sx={{
+             color: 'primary.main',
+             fontSize: isMobile ? "1rem" : "1.25rem",
+           }}
+         >
+           Selecionar Cliente associado
+         </DialogTitle>
+         <DialogContent sx={{minHeight: isMobile ? 200 : 300, p: isMobile ? 1.5 : 2}}>
             <OptionsField
                 options={clientOptions}
                 label={"Cliente"}

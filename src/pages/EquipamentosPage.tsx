@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useSelector } from 'react-redux';
 import EquipamentosTable from "../tables/EquipamentosTable";
 import StatsContainer from '../components/shared/StatsContainer';
@@ -8,11 +8,33 @@ import type { RootState } from "../redux/store";
 
 const EquipamentosPage = () => {
   const { rows } = useSelector((state: RootState) => state.equipamentosTable);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const totalEquipamentos = rows.length;
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "grey.50", p: 3, width: "90vw" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
+    <Box 
+      sx={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        minHeight: "100vh", 
+        bgcolor: "grey.50", 
+        p: isMobile ? 2 : 3,
+        pt: isMobile ? 6 : 3, // Padding-top maior no mobile para evitar sobreposição do botão de navegação
+        width: isMobile ? "100vw" : "90vw",
+        maxWidth: "100%",
+        boxSizing: "border-box",
+      }}
+    >
+      <Typography 
+        variant={isMobile ? "h5" : "h4"} 
+        sx={{ 
+          mb: isMobile ? 2 : 3, 
+          mt: isMobile ? 2 : 0,
+          fontWeight: 600, 
+          color: 'text.primary' 
+        }}
+      >
         Equipamentos
       </Typography>
 
@@ -25,7 +47,7 @@ const EquipamentosPage = () => {
         />
       </StatsContainer>
 
-      <Box sx={{ flex: 1, minHeight: 0 }}>
+      <Box sx={{ flex: 1, minHeight: 0, mt: isMobile ? 2 : 3 }}>
         <EquipamentosTable />
       </Box>
     </Box>
