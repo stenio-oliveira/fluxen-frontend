@@ -31,7 +31,9 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
   const [associatedMetrics, setAssociatedMetrics] = React.useState<Metrica[]>([]);
   const [formData, setFormData] = React.useState<Partial<EquipamentoMetrica>>({
     valor_minimo: 0,
-    valor_maximo: 0
+    valor_maximo: 0,
+    alarme_minimo: null,
+    alarme_maximo: null
   });
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [metricOptions, setMetricOptions] = React.useState<Option[]>([]);
@@ -74,7 +76,10 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
 
     const resetMetrics = () => {
       setFormData({
-        valor_minimo: 0
+        valor_minimo: 0,
+        valor_maximo: 0,
+        alarme_minimo: null,
+        alarme_maximo: null
       });
       setValidationErrors({});
       fetchMetricsCallback();
@@ -103,6 +108,36 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
         errors.valor_maximo = 'Valor máximo deve ser diferente do valor mínimo';
       } else if (formData.valor_minimo > formData.valor_maximo) {
         errors.valor_maximo = 'Valor máximo deve ser maior que o valor mínimo';
+      }
+    }
+
+    // Validar alarme mínimo (opcional, mas se fornecido, deve estar dentro da faixa)
+    if (formData.alarme_minimo !== null && formData.alarme_minimo !== undefined) {
+      if (formData.alarme_minimo < 0) {
+        errors.alarme_minimo = 'Alarme mínimo não pode ser negativo';
+      } else if (formData.valor_minimo !== undefined && formData.alarme_minimo < formData.valor_minimo) {
+        errors.alarme_minimo = 'Alarme mínimo não pode ser menor que o valor mínimo';
+      } else if (formData.valor_maximo !== undefined && formData.alarme_minimo > formData.valor_maximo) {
+        errors.alarme_minimo = 'Alarme mínimo não pode ser maior que o valor máximo';
+      }
+    }
+
+    // Validar alarme máximo (opcional, mas se fornecido, deve estar dentro da faixa)
+    if (formData.alarme_maximo !== null && formData.alarme_maximo !== undefined) {
+      if (formData.alarme_maximo < 0) {
+        errors.alarme_maximo = 'Alarme máximo não pode ser negativo';
+      } else if (formData.valor_minimo !== undefined && formData.alarme_maximo < formData.valor_minimo) {
+        errors.alarme_maximo = 'Alarme máximo não pode ser menor que o valor mínimo';
+      } else if (formData.valor_maximo !== undefined && formData.alarme_maximo > formData.valor_maximo) {
+        errors.alarme_maximo = 'Alarme máximo não pode ser maior que o valor máximo';
+      }
+    }
+
+    // Validar se alarme mínimo e máximo são consistentes
+    if (formData.alarme_minimo !== null && formData.alarme_minimo !== undefined &&
+        formData.alarme_maximo !== null && formData.alarme_maximo !== undefined) {
+      if (formData.alarme_minimo >= formData.alarme_maximo) {
+        errors.alarme_maximo = 'Alarme máximo deve ser maior que o alarme mínimo';
       }
     }
 
@@ -144,6 +179,34 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
       setValidationErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.valor_maximo;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleAlarmeMinimoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === '' ? null : Number(e.target.value);
+    setFormData({ ...formData, alarme_minimo: value });
+
+    // Limpar erro de validação do alarme mínimo
+    if (validationErrors.alarme_minimo) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.alarme_minimo;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleAlarmeMaximoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === '' ? null : Number(e.target.value);
+    setFormData({ ...formData, alarme_maximo: value });
+
+    // Limpar erro de validação do alarme máximo
+    if (validationErrors.alarme_maximo) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.alarme_maximo;
         return newErrors;
       });
     }
@@ -520,6 +583,8 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
                         setFormData({
                           valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
                           valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
+                          alarme_minimo: metric.equipamento_metrica?.alarme_minimo ?? null,
+                          alarme_maximo: metric.equipamento_metrica?.alarme_maximo ?? null,
                         });
                       }}
                     />
@@ -606,6 +671,34 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
             {validationErrors.valor_maximo && (
               <span className="mt-1 text-xs text-red-500">
                 {validationErrors.valor_maximo}
+              </span>
+            )}
+          </Box>
+          <Box>
+            <Input
+              label="Alarme Mínimo (opcional)"
+              type="number"
+              value={formData.alarme_minimo ?? ''}
+              onChange={handleAlarmeMinimoChange}
+              helperText="Valor abaixo do qual o alarme será disparado"
+            />
+            {validationErrors.alarme_minimo && (
+              <span className="mt-1 text-xs text-red-500">
+                {validationErrors.alarme_minimo}
+              </span>
+            )}
+          </Box>
+          <Box>
+            <Input
+              label="Alarme Máximo (opcional)"
+              type="number"
+              value={formData.alarme_maximo ?? ''}
+              onChange={handleAlarmeMaximoChange}
+              helperText="Valor acima do qual o alarme será disparado"
+            />
+            {validationErrors.alarme_maximo && (
+              <span className="mt-1 text-xs text-red-500">
+                {validationErrors.alarme_maximo}
               </span>
             )}
           </Box>
