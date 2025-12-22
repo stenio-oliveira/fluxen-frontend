@@ -49,6 +49,58 @@ ChartJS.register(
   Legend
 );
 
+// Plugin personalizado para exibir valor central no gráfico de rosca
+const centerTextPlugin = {
+  id: 'centerText',
+  beforeDraw: (chart: any) => {
+    // Só executar para gráficos de rosca
+    if (chart.config.type !== 'doughnut') return;
+
+    // Obter metadata das opções do gráfico
+    const metadata = chart.options?.metadata || chart.config.options?.metadata;
+    if (!metadata || metadata.currentValue === undefined) return;
+
+    const ctx = chart.ctx;
+    const chartArea = chart.chartArea;
+
+    // Verificar se chartArea existe (pode não existir se o gráfico ainda não foi renderizado)
+    if (!chartArea) return;
+
+    const centerX = (chartArea.left + chartArea.right) / 2;
+    const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+    const currentValue = metadata.currentValue;
+    const unidade = metadata.metrica?.unidade || '';
+
+    ctx.save();
+
+    // Calcular tamanho da fonte baseado no tamanho do gráfico
+    const chartWidth = chartArea.right - chartArea.left;
+    const chartHeight = chartArea.bottom - chartArea.top;
+    const minDimension = Math.min(chartWidth, chartHeight);
+    const fontSize = Math.max(36, minDimension / 6); // Fonte responsiva, mínimo 36px para mais destaque
+
+    // Desenhar valor principal em destaque (maior e mais visível)
+    ctx.fillStyle = '#000000';
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const text = `${currentValue.toFixed(2)}`;
+    ctx.fillText(text, centerX, centerY - fontSize * 0.2);
+
+    // Desenhar unidade abaixo do valor
+    ctx.fillStyle = '#666666';
+    ctx.font = `bold ${fontSize * 0.45}px Arial`;
+    ctx.fillText(unidade, centerX, centerY + fontSize * 0.4);
+
+    ctx.restore();
+  },
+};
+
+// Registrar plugin globalmente
+ChartJS.register(centerTextPlugin);
+
 interface ChartCardProps {
   equipamentoId: number;
   equipamentoNome: string;
@@ -56,7 +108,7 @@ interface ChartCardProps {
   dashboardItemId?: number;
 }
 
-const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, initialMetricId, dashboardItemId }) => {
+const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, initialMetricId }) => {
   const [chartType, setChartType] = useState<ChartType>('line');
   const [selectedMetric, setSelectedMetric] = useState<number | ''>(initialMetricId || '');
   const [timeRange, setTimeRange] = useState<TimeRange>('5min');
@@ -172,6 +224,8 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, i
           text: `${chartData.metadata.metrica.nome} (${chartData.metadata.metrica.unidade})`,
         },
       },
+      // Passar metadata através das opções para o plugin acessar
+      metadata: chartData.metadata,
     };
 
     // Configurar eixo Y para gráficos de linha e barra usando valor_maximo e valor_minimo
