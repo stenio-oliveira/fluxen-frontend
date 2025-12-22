@@ -10,15 +10,21 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import { BaseButton } from './shared/Button';
 import { BaseCancelButton } from './shared/BaseCancelButton';
 import EquipamentoService from '../services/equipamentoService';
+import MetricaService from '../services/metricaService';
 import UsuarioEquipamentoDashboardService from '../services/usuarioEquipamentoDashboardService';
 import type { Equipamento } from '../types/Equipamento';
 import type { Usuario } from '../types/Usuario';
+import type { UsuarioEquipamentoDashboard } from '../types/UsuarioEquipamentoDashboard';
+import type { Metrica } from '../types/Metrica';
 import { useDispatch } from 'react-redux';
 import { setFeedback } from '../redux/slices/feedBackSlice';
 
@@ -40,9 +46,12 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [availableEquipamentos, setAvailableEquipamentos] = useState<Equipamento[]>([]);
-  const [selectedEquipamentos, setSelectedEquipamentos] = useState<Equipamento[]>([]);
+  const [selectedDashboardItems, setSelectedDashboardItems] = useState<UsuarioEquipamentoDashboard[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [equipamentoMetrics, setEquipamentoMetrics] = useState<Record<number, Metrica[]>>({});
+  const [selectedEquipamentoForAdd, setSelectedEquipamentoForAdd] = useState<number | null>(null);
+  const [selectedMetricForAdd, setSelectedMetricForAdd] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
@@ -62,16 +71,24 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
 
       console.log("allEquipamentos", allEquipamentos);
 
-      // Buscar equipamentos já selecionados no dashboard
-      const dashboardEquipamentos = await UsuarioEquipamentoDashboardService.getEquipamentos(user.id);
+      // Buscar associações do dashboard
+      const dashboardItems = await UsuarioEquipamentoDashboardService.getEquipamentosDashboard(user.id);
 
-      // Separar disponíveis e selecionados
-      const selectedIds = new Set(dashboardEquipamentos.map(eq => eq.id));
-      const available = allEquipamentos.filter(eq => !selectedIds.has(eq.id));
-      const selected = allEquipamentos.filter(eq => selectedIds.has(eq.id));
+      // Buscar métricas para cada equipamento
+      const metricsMap: Record<number, Metrica[]> = {};
+      for (const equipamento of allEquipamentos) {
+        try {
+          const metrics = await MetricaService.getMetricaByEquipamentoId(equipamento.id);
+          metricsMap[equipamento.id] = metrics;
+        } catch (error) {
+          console.error(`Erro ao buscar métricas do equipamento ${equipamento.id}:`, error);
+          metricsMap[equipamento.id] = [];
+        }
+      }
 
-      setAvailableEquipamentos(available);
-      setSelectedEquipamentos(selected);
+      setEquipamentoMetrics(metricsMap);
+      setSelectedDashboardItems(dashboardItems);
+      setAvailableEquipamentos(allEquipamentos);
     } catch (error: any) {
       dispatch(
         setFeedback({
@@ -91,23 +108,33 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
     }
   }, [open, fetchData]);
 
-  const handleAddEquipamento = async (equipamento: Equipamento) => {
-    if (!user?.id) return;
+  const handleAddEquipamento = async () => {
+    if (!user?.id || !selectedEquipamentoForAdd) return;
+
+    const equipamento = availableEquipamentos.find(eq => eq.id === selectedEquipamentoForAdd);
+    if (!equipamento) return;
 
     setSaving(true);
     try {
-      await UsuarioEquipamentoDashboardService.addEquipamentoToDashboard(user.id, equipamento.id);
+      const newItem = await UsuarioEquipamentoDashboardService.addEquipamentoToDashboard(
+        user.id,
+        selectedEquipamentoForAdd,
+        selectedMetricForAdd || null
+      );
       
       // Atualizar listas localmente
-      setSelectedEquipamentos(prev => [...prev, equipamento]);
-      setAvailableEquipamentos(prev => prev.filter(eq => eq.id !== equipamento.id));
+      setSelectedDashboardItems(prev => [...prev, newItem]);
       
       dispatch(
         setFeedback({
-          message: `Equipamento "${equipamento.nome}" adicionado ao dashboard`,
+          message: `Equipamento "${equipamento.nome}" ${selectedMetricForAdd ? 'com métrica selecionada' : ''} adicionado ao dashboard`,
           type: 'success',
         })
       );
+      
+      // Resetar seleções
+      setSelectedEquipamentoForAdd(null);
+      setSelectedMetricForAdd(null);
       
       onUpdate();
     } catch (error: any) {
@@ -123,20 +150,35 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
     }
   };
 
-  const handleRemoveEquipamento = async (equipamento: Equipamento) => {
-    if (!user?.id) return;
+  const handleEquipamentoSelect = async (equipamentoId: number) => {
+    setSelectedEquipamentoForAdd(equipamentoId);
+    setSelectedMetricForAdd(null);
+    
+    // Se não temos as métricas ainda, buscar
+    if (!equipamentoMetrics[equipamentoId]) {
+      try {
+        const metrics = await MetricaService.getMetricaByEquipamentoId(equipamentoId);
+        setEquipamentoMetrics(prev => ({ ...prev, [equipamentoId]: metrics }));
+      } catch (error) {
+        console.error('Erro ao buscar métricas:', error);
+      }
+    }
+  };
+
+  const handleRemoveEquipamento = async (dashboardItem: UsuarioEquipamentoDashboard) => {
+    if (!dashboardItem.id) return;
 
     setSaving(true);
     try {
-      await UsuarioEquipamentoDashboardService.removeEquipamentoFromDashboard(user.id, equipamento.id);
+      await UsuarioEquipamentoDashboardService.removeEquipamentoFromDashboardById(dashboardItem.id);
       
       // Atualizar listas localmente
-      setAvailableEquipamentos(prev => [...prev, equipamento]);
-      setSelectedEquipamentos(prev => prev.filter(eq => eq.id !== equipamento.id));
+      setSelectedDashboardItems(prev => prev.filter(item => item.id !== dashboardItem.id));
       
+      const equipamentoNome = dashboardItem.equipamento?.nome || 'Equipamento';
       dispatch(
         setFeedback({
-          message: `Equipamento "${equipamento.nome}" removido do dashboard`,
+          message: `Equipamento "${equipamentoNome}" removido do dashboard`,
           type: 'success',
         })
       );
@@ -181,61 +223,103 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
             {/* Equipamentos Selecionados */}
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1.5 }}>
-                Equipamentos no Dashboard ({selectedEquipamentos.length})
+                Equipamentos no Dashboard ({selectedDashboardItems.length})
               </Typography>
-              {selectedEquipamentos.length === 0 ? (
+              {selectedDashboardItems.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
                   Nenhum equipamento selecionado. Adicione equipamentos abaixo.
                 </Typography>
               ) : (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {selectedEquipamentos.map((equipamento) => (
-                    <Chip
-                      key={equipamento.id}
-                      label={equipamento.nome}
-                      onDelete={() => handleRemoveEquipamento(equipamento)}
-                      deleteIcon={<CloseIcon />}
-                      color="primary"
-                      variant="filled"
-                      disabled={saving}
-                      sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
-                    />
-                  ))}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {selectedDashboardItems.map((dashboardItem) => {
+                    const equipamentoNome = dashboardItem.equipamento?.nome || 'Equipamento';
+                    const metricaNome = dashboardItem.metrica ? ` - ${dashboardItem.metrica.nome}` : '';
+                    return (
+                      <Chip
+                        key={dashboardItem.id}
+                        label={`${equipamentoNome}${metricaNome}`}
+                        onDelete={() => handleRemoveEquipamento(dashboardItem)}
+                        deleteIcon={<CloseIcon />}
+                        color="primary"
+                        variant="filled"
+                        disabled={saving}
+                        sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
+                      />
+                    );
+                  })}
                 </Box>
               )}
             </Box>
 
-            {/* Equipamentos Disponíveis */}
+            {/* Adicionar Novo Equipamento */}
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1.5 }}>
-                Equipamentos Disponíveis ({availableEquipamentos.length})
+                Adicionar Equipamento ao Dashboard
               </Typography>
-              {availableEquipamentos.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                  Todos os equipamentos já estão no dashboard.
-                </Typography>
-              ) : (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {availableEquipamentos.map((equipamento) => (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Equipamento</InputLabel>
+                  <Select
+                    value={selectedEquipamentoForAdd || ''}
+                    onChange={(e) => handleEquipamentoSelect(Number(e.target.value))}
+                    label="Equipamento"
+                    disabled={saving}
+                  >
+                    {availableEquipamentos.map((equipamento) => (
+                      <MenuItem key={equipamento.id} value={equipamento.id}>
+                        {equipamento.nome}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {selectedEquipamentoForAdd && equipamentoMetrics[selectedEquipamentoForAdd] && (
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Métrica (Opcional)</InputLabel>
+                    <Select
+                      value={selectedMetricForAdd || ''}
+                      onChange={(e) => setSelectedMetricForAdd(e.target.value ? Number(e.target.value) : null)}
+                      label="Métrica (Opcional)"
+                      disabled={saving}
+                    >
+                      <MenuItem value="">
+                        <em>Nenhuma (todas as métricas)</em>
+                      </MenuItem>
+                      {equipamentoMetrics[selectedEquipamentoForAdd].map((metrica) => (
+                        <MenuItem key={metrica.id} value={metrica.id}>
+                          {metrica.nome} ({metrica.unidade})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                {selectedEquipamentoForAdd && (
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Chip
-                      key={equipamento.id}
-                      label={equipamento.nome}
-                      onClick={() => handleAddEquipamento(equipamento)}
                       icon={<AddIcon />}
-                      color="default"
+                      label="Adicionar"
+                      onClick={handleAddEquipamento}
+                      color="primary"
                       variant="outlined"
                       disabled={saving}
                       sx={{
-                        fontSize: isMobile ? '0.75rem' : '0.875rem',
                         cursor: 'pointer',
                         '&:hover': {
-                          backgroundColor: 'action.hover',
+                          backgroundColor: 'primary.main',
+                          color: 'white',
                         },
                       }}
                     />
-                  ))}
-                </Box>
-              )}
+                  </Box>
+                )}
+
+                {availableEquipamentos.length === 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    Nenhum equipamento disponível para adicionar.
+                  </Typography>
+                )}
+              </Box>
             </Box>
           </Box>
         )}

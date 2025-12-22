@@ -152,6 +152,7 @@ export default function UsersTable() {
       <Dialog
         open={creatingUser || editingUser !== null}
         fullWidth
+        maxWidth="lg"
       >
         <DialogTitle>
           {creatingUser ? "Criar Usuário" : "Editar Usuário"}

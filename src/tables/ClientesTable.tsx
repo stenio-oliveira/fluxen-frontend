@@ -120,7 +120,7 @@ const ClientesTable = () => {
           hideFooter={false}
         />
       )}
-      <Dialog open={creatingCliente || editingCliente !== null}>
+      <Dialog open={creatingCliente || editingCliente !== null} maxWidth="lg" fullWidth>
         <DialogTitle>{creatingCliente ? "Criar Cliente" : "Editar Cliente"}</DialogTitle>
         <DialogContent>
           <ClienteForm />

@@ -18,13 +18,24 @@ class UsuarioEquipamentoDashboardService {
    */
   static async addEquipamentoToDashboard(
     userId: number,
-    equipamentoId: number
+    equipamentoId: number,
+    id_metrica?: number | null
   ): Promise<UsuarioEquipamentoDashboard> {
     const response = await api.post(this.endpoint, {
       userId,
-      equipamentoId
+      equipamentoId,
+      id_metrica: id_metrica || null
     });
     return response.data;
+  }
+
+  /**
+   * Remove um equipamento do dashboard do usuário por ID da associação
+   */
+  static async removeEquipamentoFromDashboardById(
+    id: number
+  ): Promise<void> {
+    await api.delete(`${this.endpoint}/item/${id}`);
   }
 
   /**
@@ -32,9 +43,11 @@ class UsuarioEquipamentoDashboardService {
    */
   static async removeEquipamentoFromDashboard(
     userId: number,
-    equipamentoId: number
+    equipamentoId: number,
+    id_metrica?: number | null
   ): Promise<void> {
-    await api.delete(`${this.endpoint}/${userId}/${equipamentoId}`);
+    const params = id_metrica ? `?id_metrica=${id_metrica}` : '';
+    await api.delete(`${this.endpoint}/${userId}/${equipamentoId}${params}`);
   }
 
   /**
@@ -50,6 +63,7 @@ class UsuarioEquipamentoDashboardService {
 
   /**
    * Busca apenas os equipamentos (sem a estrutura de associação)
+   * @deprecated Use getEquipamentosDashboard para obter as associações completas com métricas
    */
   static async getEquipamentos(userId: number): Promise<Equipamento[]> {
     const dashboardItems = await this.getEquipamentosDashboard(userId);

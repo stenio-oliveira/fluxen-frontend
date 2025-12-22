@@ -12,9 +12,10 @@ interface EquipmentCardProps {
     cliente_nome?: string | null;
   };
   isAdmin: boolean;
+  canDelete?: boolean; // Indica se pode deletar (admin ou gestor)
 }
 
-export default function EquipmentCard({ equipment, isAdmin }: EquipmentCardProps) {
+export default function EquipmentCard({ equipment, isAdmin, canDelete = false }: EquipmentCardProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -104,7 +105,7 @@ export default function EquipmentCard({ equipment, isAdmin }: EquipmentCardProps
           </Box>
 
           {/* Ações */}
-          {isAdmin ? (
+          {canDelete ? (
             <Box
               sx={{
                 display: 'flex',
@@ -113,19 +114,21 @@ export default function EquipmentCard({ equipment, isAdmin }: EquipmentCardProps
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <IconButton
-                size="small"
-                color="primary"
-                onClick={handleEdit}
-                sx={{
-                  '&:hover': {
-                    bgcolor: 'primary.light',
-                    color: 'white',
-                  },
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
+              {isAdmin && (
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={handleEdit}
+                  sx={{
+                    '&:hover': {
+                      bgcolor: 'primary.light',
+                      color: 'white',
+                    },
+                  }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              )}
               <IconButton
                 size="small"
                 color="error"

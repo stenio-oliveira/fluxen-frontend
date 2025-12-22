@@ -45,9 +45,9 @@ const AppRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
 
-      {/* Rotas protegidas para ADM */}
+      {/* Rotas protegidas para ADM e gestores */}
       <Route path="/clientes" element={
-        <ProtectedRoute requiredRole="ADM">
+        <ProtectedRoute requiredRole="ADM" allowManager={true}>
           <ClientesPage />
         </ProtectedRoute>
       } />

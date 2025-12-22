@@ -5,6 +5,7 @@ interface EquipmentsCardViewProps {
   equipments: any[];
   loading: boolean;
   isAdmin: boolean;
+  canDelete?: boolean; // Indica se pode deletar (admin ou gestor)
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -14,6 +15,7 @@ export default function EquipmentsCardView({
   equipments,
   loading,
   isAdmin,
+  canDelete = false,
   page,
   totalPages,
   onPageChange,
@@ -59,6 +61,7 @@ export default function EquipmentsCardView({
             key={equipment.id}
             equipment={equipment}
             isAdmin={isAdmin}
+            canDelete={canDelete}
           />
         ))}
       </Stack>

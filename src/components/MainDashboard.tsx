@@ -26,14 +26,14 @@ import DashboardEquipamentosSelector from "./DashboardEquipamentosSelector";
 import ChartCard from "./ChartCard";
 import UsuarioEquipamentoDashboardService from "../services/usuarioEquipamentoDashboardService";
 import NotificacaoService from "../services/notificacaoService";
-import type { Equipamento } from "../types/Equipamento";
+import type { UsuarioEquipamentoDashboard } from "../types/UsuarioEquipamentoDashboard";
 import type { Notificacao } from "../types/Notificacao";
 
 const Dashboard = () => {
   const {sideMenuOpen, sideMenuWidth } = useSelector((state: RootState) => state.sideMenu);
   const { user } = useSelector((state: RootState) => state.user);
 
-  const [dashboardEquipamentos, setDashboardEquipamentos] = useState<Equipamento[]>([]);
+  const [dashboardEquipamentos, setDashboardEquipamentos] = useState<UsuarioEquipamentoDashboard[]>([]);
   const [loadingEquipamentos, setLoadingEquipamentos] = useState(false);
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [notificacoesDrawerOpen, setNotificacoesDrawerOpen] = useState(false);
@@ -47,8 +47,8 @@ const Dashboard = () => {
 
     setLoadingEquipamentos(true);
     try {
-      const equipamentos = await UsuarioEquipamentoDashboardService.getEquipamentos(user.id);
-      setDashboardEquipamentos(equipamentos);
+      const dashboardItems = await UsuarioEquipamentoDashboardService.getEquipamentosDashboard(user.id);
+      setDashboardEquipamentos(dashboardItems);
     } catch (error) {
       console.error('Error fetching dashboard equipamentos:', error);
     } finally {
@@ -89,16 +89,6 @@ const Dashboard = () => {
     fetchDashboardEquipamentos();
   }, [fetchDashboardEquipamentos]);
 
-  const handleRemoveEquipamento = async (equipamentoId: number) => {
-    if (!user?.id) return;
-
-    try {
-      await UsuarioEquipamentoDashboardService.removeEquipamentoFromDashboard(user.id, equipamentoId);
-      await fetchDashboardEquipamentos();
-    } catch (error) {
-      console.error('Error removing equipamento:', error);
-    }
-  };
 
   const handleMarkAsRead = async (id: number) => {
     try {
@@ -328,14 +318,16 @@ const Dashboard = () => {
                 }}
               >
                 <Grid container spacing={3} justifyContent="center">
-                  {dashboardEquipamentos.map((equipamento) => (
+                  {dashboardEquipamentos.map((dashboardItem) => (
                     <Grid
-                      key={equipamento.id}
+                      key={dashboardItem.id}
                       size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}
                     >
                       <ChartCard
-                        equipamentoId={equipamento.id}
-                        equipamentoNome={equipamento.nome}
+                        equipamentoId={dashboardItem.id_equipamento}
+                        equipamentoNome={dashboardItem.equipamento?.nome || 'Equipamento'}
+                        initialMetricId={dashboardItem.id_metrica || undefined}
+                        dashboardItemId={dashboardItem.id}
                       />
                     </Grid>
                   ))}

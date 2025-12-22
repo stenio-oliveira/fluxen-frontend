@@ -4,13 +4,40 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EquipamentoLogGrupoTable from "../tables/EquipamentoLogGrupoTable";
 import OnlineStatusCard from "../components/shared/OnlineStatusCard";
 import { useEquipamentoStatus } from "../hooks/useEquipamentoStatus";
+import { useState, useEffect } from "react";
+import EquipamentoService from "../services/equipamentoService";
+import type { Equipamento } from "../types/Equipamento";
+import { useDispatch } from "react-redux";
+import { setFeedback } from "../redux/slices/feedBackSlice";
 
 const EquipamentoLogsPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { id } = useParams();
   const { isOnline, lastUpdate, isRefreshing } = useEquipamentoStatus();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
+
+  // Buscar dados do equipamento
+  useEffect(() => {
+    const fetchEquipamento = async () => {
+      if (id) {
+        try {
+          const equipamentoData = await EquipamentoService.getEquipamentoById(Number(id));
+          setEquipamento(equipamentoData);
+        } catch (error) {
+          console.error('Erro ao buscar equipamento:', error);
+          dispatch(setFeedback({
+            message: 'Erro ao carregar dados do equipamento',
+            type: 'error'
+          }));
+        }
+      }
+    };
+
+    fetchEquipamento();
+  }, [id, dispatch]);
 
   return (
     <Box
@@ -44,14 +71,24 @@ const EquipamentoLogsPage = () => {
               fontWeight="bold"
               sx={{ mb: 0.5 }}
             >
-              Logs do Equipamento #{id}
+              {equipamento ? equipamento.nome : `Logs do Equipamento #${id}`}
             </Typography>
             <Typography
               variant={isMobile ? "caption" : "body2"}
               color="text.secondary"
+              sx={{ mb: 0.5 }}
             >
               Histórico de métricas e valores convertidos
             </Typography>
+            {equipamento && (
+              <Typography
+                variant={isMobile ? "body2" : "body1"}
+                color="text.secondary"
+                sx={{ mt: 0.5 }}
+              >
+                Cliente: {equipamento.cliente_nome || equipamento.cliente?.nome || 'Não informado'}
+              </Typography>
+            )}
           </Box>
           <Button
             onClick={() => navigate(-1)}

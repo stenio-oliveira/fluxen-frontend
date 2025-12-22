@@ -357,7 +357,7 @@ const EquipamentoDetail = () => {
           >
             📊 Métricas Associadas
           </Typography>
-          <ManageMetrics disabled={!isAdmin} />
+          <ManageMetrics disabled={!isAdmin && !user?.is_gestor} />
         </Card>
       </Box>
     </Box>

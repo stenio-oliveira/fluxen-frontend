@@ -87,26 +87,6 @@ export const useClientColumns = () => {
       }
     },
     {
-      field: 'responsavel_nome',
-      headerName: 'Responsável',
-      flex: 1,
-      disableColumnMenu: true,
-      renderHeader: (params: any) => {
-        const { colDef } = params;
-        return (
-          <Box sx={{ width: colDef.width }}>
-            <HeaderFilter
-              key={'responsavel_nome'}
-              label={'Responsável'}
-              field={'responsavel_nome'}
-              type={'string'}
-              onFilterChange={handleChangeFilters}
-            />
-          </Box>
-        );
-      }
-    },
-    {
       field: 'actions',
       headerName: 'Ações',
       flex: 1,

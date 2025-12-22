@@ -6,7 +6,6 @@ export interface ClienteFilters {
     id: string | null;
     nome: string | null;
     cnpj: string | null;
-    responsavel_nome: string | null;
   };
   generalFilter: string;
 }
@@ -30,7 +29,6 @@ const initialState: ClientesTableState = {
       id: null,
       nome: null,
       cnpj: null,
-      responsavel_nome: null,
     },
     generalFilter: "",
   },

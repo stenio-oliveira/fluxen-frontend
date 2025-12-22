@@ -27,9 +27,15 @@ export default function EquipamentosTable() {
   const {columns } = useEquipamentoColumns();
   const {rows, filters, creatingEquipamento, editingEquipamento, deletingEquipamento} = useSelector((state: RootState) => state.equipamentosTable);
   const { clientOptions } = useClientOptions();
+  
+  console.log("EquipamentosTable - clientOptions:", clientOptions);
+  console.log("EquipamentosTable - clientOptions.length:", clientOptions.length);
 
-  // Verificar se o usuário é ADM
+  // Verificar se o usuário é ADM ou gestor
   const isAdmin = user?.perfil_nome === 'ADM';
+  const isGestor = user?.is_gestor === true;
+  const canManageEquipments = isAdmin || isGestor; // Admin ou gestor podem gerenciar equipamentos
+  const canDelete = isAdmin || isGestor; // Admin ou gestor podem deletar
 
   // Paginação para mobile
   const [cardPage, setCardPage] = useState(1);
@@ -136,7 +142,7 @@ export default function EquipamentosTable() {
             changeGeneralFilter(e.target.value)
           }
         />
-        {isAdmin && (
+        {canManageEquipments && (
           <BaseCreateButton
             onClick={handleCreateEquipamento}
           />
@@ -149,6 +155,7 @@ export default function EquipamentosTable() {
           equipments={paginatedRows}
           loading={false}
           isAdmin={isAdmin}
+          canDelete={canDelete}
           page={cardPage}
           totalPages={totalPages}
           onPageChange={handleCardPageChange}

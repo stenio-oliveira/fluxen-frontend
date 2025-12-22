@@ -1,6 +1,7 @@
 import api from '../api';
 import type { UserFilters } from '../redux/slices/usersTableSlice';
 import type { Usuario } from '../types/Usuario';
+import type { CreateUserDTO } from '../types/CreateUserDTO';
 
 class UsuarioService {
   static endpoint = "api/usuarios";
@@ -33,7 +34,7 @@ class UsuarioService {
     }
   }
 
-  static async createUsuario(data: Partial<Usuario>): Promise<Usuario> {
+  static async createUsuario(data: CreateUserDTO): Promise<Usuario> {
     const response = await api.post(this.endpoint, data);
     return response.data;
   }

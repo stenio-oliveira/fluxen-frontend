@@ -13,8 +13,10 @@ const useEquipamentoColumns = () => {
   const {filters} = useSelector((state: RootState) => state.equipamentosTable);
   const { user } = useSelector((state: RootState) => state.user);
 
-  // Verificar se o usuário é ADM
+  // Verificar se o usuário é ADM ou gestor
   const isAdmin = user?.perfil_nome === 'ADM';
+  const isGestor = user?.is_gestor === true;
+  const canDelete = isAdmin || isGestor; // Admin ou gestor podem deletar
   const handleChangeFilters = (field: string, value: string) => {
     dispatch(setFilters({ 
       ...filters, 
@@ -131,8 +133,8 @@ const useEquipamentoColumns = () => {
       flex: 1,
       disableColumnMenu: true,
       renderCell: (params) => {
-        // Se não for ADM, não mostrar ações
-        if (!isAdmin) {
+        // Se não for ADM ou gestor, não mostrar ações de deletar
+        if (!canDelete) {
           return (
             <Box sx={{ display: "flex", gap: 1, height: '100%', alignItems: 'center' }}>
               <Typography fontSize="12px" color="gray" fontWeight="bold">

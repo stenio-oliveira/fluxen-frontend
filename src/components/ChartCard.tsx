@@ -52,11 +52,13 @@ ChartJS.register(
 interface ChartCardProps {
   equipamentoId: number;
   equipamentoNome: string;
+  initialMetricId?: number;
+  dashboardItemId?: number;
 }
 
-const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome }) => {
+const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, initialMetricId, dashboardItemId }) => {
   const [chartType, setChartType] = useState<ChartType>('line');
-  const [selectedMetric, setSelectedMetric] = useState<number | ''>('');
+  const [selectedMetric, setSelectedMetric] = useState<number | ''>(initialMetricId || '');
   const [timeRange, setTimeRange] = useState<TimeRange>('5min');
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [metrics, setMetrics] = useState<Metrica[]>([]);
@@ -71,8 +73,13 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome })
       try {
         const equipamentoMetrics = await MetricaService.getMetricaByEquipamentoId(equipamentoId);
         setMetrics(equipamentoMetrics);
-        if (equipamentoMetrics.length > 0 && !selectedMetric) {
-          setSelectedMetric(equipamentoMetrics[0].id);
+        if (equipamentoMetrics.length > 0) {
+          // Se há initialMetricId e ele existe nas métricas, usar ele; senão, usar a primeira métrica disponível
+          if (initialMetricId && equipamentoMetrics.some(m => m.id === initialMetricId)) {
+            setSelectedMetric(initialMetricId);
+          } else if (!selectedMetric) {
+            setSelectedMetric(equipamentoMetrics[0].id);
+          }
         }
       } catch (err: any) {
         setError(`Erro ao buscar métricas: ${err.message}`);
@@ -80,7 +87,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome })
     };
 
     fetchMetrics();
-  }, [equipamentoId]);
+  }, [equipamentoId, initialMetricId]);
 
   // Buscar dados do gráfico
   const fetchChartData = async () => {
@@ -153,7 +160,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome })
   const renderChart = () => {
     if (!chartData) return null;
 
-    const chartOptions = {
+    const chartOptions: any = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -166,6 +173,19 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome })
         },
       },
     };
+
+    // Configurar eixo Y para gráficos de linha e barra usando valor_maximo e valor_minimo
+    if ((chartType === 'line' || chartType === 'bar') && chartData.metadata.maxValue !== undefined && chartData.metadata.minValue !== undefined) {
+      chartOptions.scales = {
+        y: {
+          min: chartData.metadata.minValue,
+          max: chartData.metadata.maxValue,
+          ticks: {
+            stepSize: (chartData.metadata.maxValue - chartData.metadata.minValue) / 10,
+          },
+        },
+      };
+    }
 
     switch (chartType) {
       case 'line':

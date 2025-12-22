@@ -39,6 +39,24 @@ class ClienteService {
   static async deleteCliente(id: number): Promise<void> {
     await api.delete(`${this.endpoint}/${id}`);
   }
+
+  static async getClientesByManager(userId: number, filters?: ClienteFilters): Promise<Cliente[]> {
+    console.log('ClienteService.getClientesByManager - userId:', userId);
+    console.log('ClienteService.getClientesByManager - filters:', filters);
+    console.log('ClienteService.getClientesByManager - endpoint:', `${this.endpoint}/manager`);
+    
+    try {
+      const response = await api.get(`${this.endpoint}/manager`, {
+        params: filters || {}
+      });
+      console.log('ClienteService.getClientesByManager - response:', response);
+      console.log('ClienteService.getClientesByManager - response.data:', response.data);
+      return response.data || [];
+    } catch (error) {
+      console.error('ClienteService.getClientesByManager - error:', error);
+      throw error;
+    }
+  }
 }
 
 export default ClienteService;

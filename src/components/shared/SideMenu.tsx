@@ -27,8 +27,9 @@ export default function SideMenu() {
   const [open, setOpen] = React.useState(false);
   const sideMenuRef = React.useRef<HTMLDivElement>(null);
 
-  // Verificar se o usuário é ADM
+  // Verificar se o usuário é ADM ou gestor
   const isAdmin = user?.perfil_nome === 'ADM';
+  const isGestor = user?.is_gestor === true;
 
   const allLinks = [
     {
@@ -45,7 +46,7 @@ export default function SideMenu() {
       name: "Clientes",
       link: "/clientes",
       icon: <AccountCircle color="primary" />,
-      adminOnly: true, // Apenas para ADM
+      adminOrManager: true, // Disponível para ADM e gestores
     },
     {
       name: "Usuários",
@@ -62,9 +63,17 @@ export default function SideMenu() {
   ];
 
   // Filtrar links baseado no perfil do usuário
-  // Não-ADM: apenas Equipamentos
+  // Gestores: Dashboard, Equipamentos, Clientes
   // ADM: todos os links
-  const links = allLinks.filter(link => !link.adminOnly || isAdmin);
+  const links = allLinks.filter(link => {
+    if (link.adminOnly) {
+      return isAdmin;
+    }
+    if (link.adminOrManager) {
+      return isAdmin || isGestor;
+    }
+    return true; // Links sem restrição (Dashboard, Equipamentos)
+  });
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);

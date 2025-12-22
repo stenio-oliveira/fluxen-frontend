@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Stack } from '@mui/material';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Box, Stack, Typography, IconButton, Chip } from '@mui/material';
 import Input from './shared/Input';
 import OptionsField from './shared/OptionsField';
 import ClienteService from '../services/clienteService';
+import UsuarioPerfilClienteService from '../services/usuarioPerfilClienteService';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { setFeedback } from '../redux/slices/feedBackSlice';
@@ -15,25 +16,28 @@ import {
 import { BaseButton } from './shared/Button';
 import { BaseCancelButton } from './shared/BaseCancelButton';
 import { useUserOptions } from '../hooks/useUserOptions';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import type { CreateClientDTO } from '../types/CreateClientDTO';
+import type { UsuarioPerfilCliente } from '../services/usuarioPerfilClienteService';
 
 const ClienteForm = () => {
   const dispatch = useDispatch();
   const { creatingCliente, editingCliente } = useSelector((state: RootState) => state.clientesTable);
-  const [formData, setFormData] = useState({ nome: '', cnpj: '', id_responsavel: null as number | null });
+  const { user } = useSelector((state: RootState) => state.user);
+  const [formData, setFormData] = useState({ nome: '', cnpj: '' });
+  const [relacionamentos, setRelacionamentos] = useState<{
+    id_usuario: number;
+    id_perfil: number;
+  }[]>([]);
   const { userOptions } = useUserOptions();
+  const isAdmin = user?.perfil_nome === 'ADM';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === 'id_responsavel' ? (value ? Number(value) : null) : value
-    }));
-  };
-
-  const handleResponsavelChange = (value: string | number) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      id_responsavel: value ? Number(value) : null
+      [name]: value
     }));
   };
 
@@ -45,13 +49,14 @@ const ClienteForm = () => {
       return;
     }
 
-    if (!formData.id_responsavel) {
-      dispatch(setFeedback({ message: 'Selecione um usuário responsável', type: 'error' }));
-      return;
-    }
     try {
       if (creatingCliente) {
-        const cliente = await ClienteService.createCliente(formData);
+        const createClientData: CreateClientDTO = {
+          nome: formData.nome,
+          cnpj: formData.cnpj || '',
+          relacionamentos: relacionamentos.length > 0 ? relacionamentos : [],
+        };
+        const cliente = await ClienteService.createCliente(createClientData);
         if (cliente) {
           dispatch(addCliente(cliente));
           dispatch(setFeedback({ message: 'Cliente criado com sucesso', type: 'success' }));
@@ -62,6 +67,13 @@ const ClienteForm = () => {
       if (editingCliente) {
         const cliente = await ClienteService.updateCliente(editingCliente, formData);
         if (cliente) {
+          // Se for admin, atualizar relacionamentos
+          if (isAdmin) {
+            await UsuarioPerfilClienteService.updateRelacionamentosByCliente(
+              editingCliente,
+              { relacionamentos }
+            );
+          }
           dispatch(replaceCliente(cliente));
           dispatch(setFeedback({ message: 'Cliente atualizado com sucesso', type: 'success' }));
           dispatch(setEditingCliente(null));
@@ -73,24 +85,42 @@ const ClienteForm = () => {
     }
   };
 
-  const fetchCliente = async () => {
-    if (!editingCliente) return;
+  const fetchCliente = useCallback(async () => {
+    if (!editingCliente) {
+      setFormData({ nome: '', cnpj: '' });
+      setRelacionamentos([]);
+      return;
+    }
     try {
       const cliente = await ClienteService.getClienteById(editingCliente);
-      console.log("cliente", cliente);
       setFormData({
         nome: cliente?.nome || '',
         cnpj: cliente?.cnpj || '',
-        id_responsavel: cliente?.id_responsavel || null,
       });
+
+      // Buscar relacionamentos se for admin
+      if (isAdmin && cliente?.id) {
+        try {
+          const relacionamentosData = await UsuarioPerfilClienteService.getRelacionamentosByCliente(cliente.id);
+          setRelacionamentos(
+            relacionamentosData.map((r: UsuarioPerfilCliente) => ({
+              id_usuario: r.id_usuario,
+              id_perfil: r.id_perfil,
+            }))
+          );
+        } catch (error) {
+          console.error('Erro ao buscar relacionamentos:', error);
+          setRelacionamentos([]);
+        }
+      }
     } catch (e: any) {
       dispatch(setFeedback({ message: `Erro ao buscar cliente: ${e}`, type: 'error' }));
     }
-  };
+  }, [editingCliente, isAdmin, dispatch]);
 
   useEffect(() => {
     fetchCliente();
-  }, [editingCliente]);
+  }, [fetchCliente]);
 
   const fields = [
     { label: 'Nome', name: 'nome', type: 'text' },
@@ -117,15 +147,82 @@ const ClienteForm = () => {
         </Box>
       ))}
 
-      <Box>
-        <OptionsField
-          label="Usuário Responsável"
-          options={userOptions}
-          value={formData.id_responsavel || ''}
-          onChange={handleResponsavelChange}
-          required={true}
-        />
-      </Box>
+      {/* Seção de relacionamentos - sempre visível para criação e edição (apenas para admin) */}
+      {(creatingCliente || (editingCliente && isAdmin)) && (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Relacionamentos com Usuários
+            </Typography>
+            <IconButton
+              color="primary"
+              onClick={() => {
+                setRelacionamentos([
+                  ...relacionamentos,
+                  { id_usuario: (userOptions[0]?.id as number) || 0, id_perfil: 2 },
+                ]);
+              }}
+              size="small"
+            >
+              <AddIcon />
+            </IconButton>
+          </Box>
+
+          {relacionamentos.map((rel, index) => {
+            const usuarioOption = userOptions.find(u => u.id === rel.id_usuario);
+            const perfilNome = rel.id_perfil === 2 ? 'Responsável' : rel.id_perfil === 3 ? 'Gestor' : 'Desconhecido';
+
+            const perfilOptions = [
+              { id: 2, name: 'Responsável' },
+              { id: 3, name: 'Gestor' },
+            ];
+
+            return (
+              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Chip
+                  label={`${usuarioOption?.name || 'Usuário não encontrado'} - ${perfilNome}`}
+                  color={rel.id_perfil === 3 ? 'primary' : 'secondary'}
+                />
+                <OptionsField
+                  label="Usuário"
+                  options={userOptions}
+                  value={rel.id_usuario}
+                  onChange={(value) => {
+                    const newRel = [...relacionamentos];
+                    newRel[index].id_usuario = Number(value);
+                    setRelacionamentos(newRel);
+                  }}
+                />
+                <OptionsField
+                  label="Perfil"
+                  options={perfilOptions}
+                  value={rel.id_perfil}
+                  onChange={(value) => {
+                    const newRel = [...relacionamentos];
+                    newRel[index].id_perfil = Number(value);
+                    setRelacionamentos(newRel);
+                  }}
+                />
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    setRelacionamentos(relacionamentos.filter((_, i) => i !== index));
+                  }}
+                  size="small"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            );
+          })}
+
+          {relacionamentos.length === 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Nenhum relacionamento adicionado. O cliente será cadastrado sem relacionamentos.
+            </Typography>
+          )}
+        </Box>
+      )}
       <Stack direction="row" spacing={2}>
         {creatingCliente ? (
           <BaseButton
