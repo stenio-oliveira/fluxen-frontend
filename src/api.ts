@@ -19,14 +19,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Só redireciona se não estiver já na página de auth
-      if (window.location.pathname !== '/auth') {
+      // Só redireciona se não estiver já em uma rota pública
+      const publicRoutes = ['/auth', '/register', '/forgot-password', '/reset-password'];
+      if (!publicRoutes.includes(window.location.pathname)) {
         // Limpa o estado do Redux
         store.dispatch(logout());
         // Limpa o localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-      // Redireciona para auth
+        // Redireciona para auth
         window.location.href = '/auth';
       }
     }

@@ -69,22 +69,42 @@ const LoginPage: React.FC = () => {
           variant="contained"
           color="primary"
           fullWidth
-          sx={{ borderRadius: '8px' }}
+          sx={{ borderRadius: '8px', mb: 1 }}
         >
           Entrar
         </Button>
 
-        <Typography
-         onClick={() => navigate('/register')} 
-         sx={{ color: 'blue', cursor: 'pointer', fontSize: 'small', marginTop: '10px',
-           textDecoration: 'underline',
-           '&:hover': {
-             textDecoration: 'underline',
-           },
-           }}
-         component={"a"}>
-          Cadastre-se
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+          <Typography
+            onClick={() => navigate('/forgot-password')}
+            sx={{
+              color: 'primary.main',
+              cursor: 'pointer',
+              fontSize: 'small',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            Esqueci minha senha
+          </Typography>
+
+          <Typography
+            onClick={() => navigate('/register')}
+            sx={{
+              color: 'primary.main',
+              cursor: 'pointer',
+              fontSize: 'small',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            Cadastre-se
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );

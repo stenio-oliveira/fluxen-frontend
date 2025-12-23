@@ -53,7 +53,8 @@ const AppContent: React.FC = () => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       dispatch(setAuthChecking(false));
-      if (window.location.pathname !== '/auth' && window.location.pathname !== '/register') {
+      const publicRoutes = ['/auth', '/register', '/forgot-password', '/reset-password'];
+      if (!publicRoutes.includes(window.location.pathname)) {
         navigate('/auth', { replace: true });
       }
     }

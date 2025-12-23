@@ -9,6 +9,8 @@ import MetricasPage from './pages/MetricasPage';
 import EquipamentoDetailPage from './pages/EquipamentoDetailPage';
 import EquipamentoLogsPage from './pages/EquipamentoLogsPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
@@ -26,6 +28,8 @@ const AppRoutes: React.FC = () => {
 
       {/* Rotas de autenticação */}
       <Route path="/auth" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path='/register' element={<RegisterPage />} />
 
       {/* Rotas principais (protegidas) */}
