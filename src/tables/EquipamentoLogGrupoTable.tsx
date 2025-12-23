@@ -9,6 +9,7 @@ import { tableStyles } from "../styles";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WarningIcon from "@mui/icons-material/Warning";
 import LogsCardView from "../components/logs/LogsCardView";
+import { parseTimestampAsLocal } from "../utils/dateUtils";
 interface PaginationMeta {
     page: number;
     pageSize: number;
@@ -114,12 +115,12 @@ export default function EquipamentoLogGrupoTable() {
                 };
 
                 // Add valueGetter for dateTime columns to convert string to Date
+                // Trata o timestamp como hora local para evitar conversão de timezone
                 if (col.type === 'dateTime') {
                     return {
                         ...baseColumn,
                         valueGetter: (value: any) => {
-                            if (!value) return null;
-                            return new Date(value);
+                            return parseTimestampAsLocal(value);
                         }
                     };
                 }

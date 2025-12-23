@@ -1,8 +1,10 @@
-import { Box, Typography, Button, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Typography, Button, useMediaQuery, useTheme, Stack } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import EquipamentoLogGrupoTable from "../tables/EquipamentoLogGrupoTable";
 import OnlineStatusCard from "../components/shared/OnlineStatusCard";
+import ExportReportDialog from "../components/reports/ExportReportDialog";
 import { useEquipamentoStatus } from "../hooks/useEquipamentoStatus";
 import { useState, useEffect } from "react";
 import EquipamentoService from "../services/equipamentoService";
@@ -18,6 +20,7 @@ const EquipamentoLogsPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Buscar dados do equipamento
   useEffect(() => {
@@ -90,17 +93,31 @@ const EquipamentoLogsPage = () => {
               </Typography>
             )}
           </Box>
-          <Button
-            onClick={() => navigate(-1)}
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            size={isMobile ? "small" : "medium"}
+          <Stack
+            direction={isMobile ? "column" : "row"}
+            spacing={1}
             sx={{
               alignSelf: isMobile ? "flex-start" : "center",
             }}
           >
-            Voltar
-          </Button>
+            <Button
+              onClick={() => setExportDialogOpen(true)}
+              variant="contained"
+              startIcon={<FileDownloadIcon />}
+              size={isMobile ? "small" : "medium"}
+              color="primary"
+            >
+              Exportar Relatório
+            </Button>
+            <Button
+              onClick={() => navigate(-1)}
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              size={isMobile ? "small" : "medium"}
+            >
+              Voltar
+            </Button>
+          </Stack>
         </Box>
 
         {/* Status Card */}
@@ -127,6 +144,16 @@ const EquipamentoLogsPage = () => {
           <EquipamentoLogGrupoTable />
         </Box>
       </Box>
+
+      {/* Dialog de Exportação */}
+      {id && equipamento && (
+        <ExportReportDialog
+          open={exportDialogOpen}
+          onClose={() => setExportDialogOpen(false)}
+          equipamentoId={Number(id)}
+          equipamentoNome={equipamento.nome}
+        />
+      )}
     </Box>
   );
 };
