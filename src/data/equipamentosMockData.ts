@@ -10,7 +10,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 101,
       nome: "Cliente 1",
       cnpj: "12.345.678/0001-01",
-      id_responsavel: 1,
     },
   },
   {
@@ -22,7 +21,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 102,
       nome: "Cliente 2",
       cnpj: "12.345.678/0001-02",
-      id_responsavel: 2,
     },
   },
   {
@@ -34,7 +32,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 103,
       nome: "Cliente 3",
       cnpj: "12.345.678/0001-03",
-      id_responsavel: 3,
     },
   },
   {
@@ -46,7 +43,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 104,
       nome: "Cliente 4",
       cnpj: "12.345.678/0001-04",
-      id_responsavel: 4,
     },
   },
   {
@@ -58,7 +54,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 105,
       nome: "Cliente 5",
       cnpj: "12.345.678/0001-05",
-      id_responsavel: 5,
     },
   },
   {
@@ -70,7 +65,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 106,
       nome: "Cliente 6",
       cnpj: "12.345.678/0001-06",
-      id_responsavel: 6,
     },
   },
   {
@@ -82,7 +76,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 107,
       nome: "Cliente 7",
       cnpj: "12.345.678/0001-07",
-      id_responsavel: 7,
     },
   },
   {
@@ -94,7 +87,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 108,
       nome: "Cliente 8",
       cnpj: "12.345.678/0001-08",
-      id_responsavel: 8,
     },
   },
   {
@@ -106,7 +98,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 109,
       nome: "Cliente 9",
       cnpj: "12.345.678/0001-09",
-      id_responsavel: 9,
     },
   },
   {
@@ -118,7 +109,6 @@ const equipamentosMockData: Equipamento[] = [
       id: 110,
       nome: "Cliente 10",
       cnpj: "12.345.678/0001-10",
-      id_responsavel: 10,
     },
   },
 ];

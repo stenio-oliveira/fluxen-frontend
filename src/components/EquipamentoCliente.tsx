@@ -34,7 +34,6 @@ const EquipamentoCliente: React.FC<EquipamentoClienteProps> = ({ disabled = fals
   const fields = [
     { label: "Nome", value: clienteInfo.nome },
     { label: "CNPJ", value: clienteInfo.cnpj },
-    { label: "Responsável", value: clienteInfo.usuario?.nome },
     { label: "ID", value: clienteInfo.id },
   ];
 
