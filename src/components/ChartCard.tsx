@@ -34,6 +34,7 @@ import {
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import ChartService from '../services/chartService';
 import MetricaService from '../services/metricaService';
+import UsuarioEquipamentoDashboardService from '../services/usuarioEquipamentoDashboardService';
 import type { ChartData, ChartType, TimeRange } from '../types/Chart';
 import type { Metrica } from '../types/Metrica';
 
@@ -106,10 +107,41 @@ interface ChartCardProps {
   equipamentoNome: string;
   initialMetricId?: number;
   dashboardItemId?: number;
+  initialTipoGraficoId?: number;
+  onTipoGraficoChange?: () => void;
 }
 
-const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, initialMetricId }) => {
-  const [chartType, setChartType] = useState<ChartType>('line');
+// Mapeamento entre id_tipo_grafico e ChartType
+const tipoGraficoToChartType = (id: number): ChartType => {
+  switch (id) {
+    case 1: return 'doughnut'; // rosca
+    case 2: return 'bar'; // barras
+    case 3: return 'line'; // linha
+    default: return 'line';
+  }
+};
+
+// Mapeamento entre ChartType e id_tipo_grafico
+const chartTypeToTipoGraficoId = (chartType: ChartType): number => {
+  switch (chartType) {
+    case 'doughnut': return 1; // rosca
+    case 'bar': return 2; // barras
+    case 'line': return 3; // linha
+    default: return 3;
+  }
+};
+
+const ChartCard: React.FC<ChartCardProps> = ({
+  equipamentoId,
+  equipamentoNome,
+  initialMetricId,
+  dashboardItemId,
+  initialTipoGraficoId,
+  onTipoGraficoChange
+}) => {
+  const [chartType, setChartType] = useState<ChartType>(
+    initialTipoGraficoId ? tipoGraficoToChartType(initialTipoGraficoId) : 'line'
+  );
   const [selectedMetric, setSelectedMetric] = useState<number | ''>(initialMetricId || '');
   const [timeRange, setTimeRange] = useState<TimeRange>('5min');
   const [chartData, setChartData] = useState<ChartData | null>(null);
@@ -118,6 +150,14 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, i
   const [error, setError] = useState<string | null>(null);
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
   const refreshIntervalRef = useRef<number | null>(null);
+
+  // Atualizar tipo de gráfico quando initialTipoGraficoId mudar
+  useEffect(() => {
+    if (initialTipoGraficoId) {
+      const newChartType = tipoGraficoToChartType(initialTipoGraficoId);
+      setChartType(newChartType);
+    }
+  }, [initialTipoGraficoId]);
 
   // Buscar métricas do equipamento
   useEffect(() => {
@@ -285,7 +325,27 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, i
             <Select
               value={chartType}
               label="Tipo de Gráfico"
-              onChange={(e) => setChartType(e.target.value as ChartType)}
+              onChange={async (e) => {
+                const newChartType = e.target.value as ChartType;
+                const previousChartType = chartType;
+                setChartType(newChartType);
+
+                // Atualizar no backend se dashboardItemId estiver disponível
+                if (dashboardItemId && onTipoGraficoChange) {
+                  try {
+                    const newTipoGraficoId = chartTypeToTipoGraficoId(newChartType);
+                    await UsuarioEquipamentoDashboardService.updateTipoGrafico(
+                      dashboardItemId,
+                      newTipoGraficoId
+                    );
+                     onTipoGraficoChange();
+                  } catch (error) {
+                    console.error('Erro ao atualizar tipo de gráfico:', error);
+                    // Reverter para o valor anterior em caso de erro
+                    setChartType(previousChartType);
+                  }
+                }
+              }}
               sx={{ borderRadius: 0 }}
               MenuProps={{
                 PaperProps: {
@@ -488,7 +548,27 @@ const ChartCard: React.FC<ChartCardProps> = ({ equipamentoId, equipamentoNome, i
                               <Select
                                   value={chartType}
                                   label="Tipo de Gráfico"
-                                  onChange={(e) => setChartType(e.target.value as ChartType)}
+                  onChange={async (e) => {
+                    const newChartType = e.target.value as ChartType;
+                    const previousChartType = chartType;
+                    setChartType(newChartType);
+
+                    // Atualizar no backend se dashboardItemId estiver disponível
+                    if (dashboardItemId && onTipoGraficoChange) {
+                      try {
+                        const newTipoGraficoId = chartTypeToTipoGraficoId(newChartType);
+                        await UsuarioEquipamentoDashboardService.updateTipoGrafico(
+                          dashboardItemId,
+                          newTipoGraficoId
+                        );
+                        onTipoGraficoChange();
+                      } catch (error) {
+                        console.error('Erro ao atualizar tipo de gráfico:', error);
+                        // Reverter para o valor anterior em caso de erro
+                        setChartType(previousChartType);
+                      }
+                    }
+                  }}
                                   sx={{ borderRadius: 0 }}
                                   MenuProps={{
                                       PaperProps: {

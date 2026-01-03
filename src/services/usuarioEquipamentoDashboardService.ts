@@ -19,12 +19,14 @@ class UsuarioEquipamentoDashboardService {
   static async addEquipamentoToDashboard(
     userId: number,
     equipamentoId: number,
-    id_metrica?: number | null
+    id_metrica?: number | null,
+    id_tipo_grafico?: number | null
   ): Promise<UsuarioEquipamentoDashboard> {
     const response = await api.post(this.endpoint, {
       userId,
       equipamentoId,
-      id_metrica: id_metrica || null
+      id_metrica: id_metrica || null,
+      id_tipo_grafico: id_tipo_grafico || null
     });
     return response.data;
   }
@@ -59,6 +61,19 @@ class UsuarioEquipamentoDashboardService {
   ): Promise<boolean> {
     const response = await api.get(`${this.endpoint}/${userId}/${equipamentoId}/check`);
     return response.data.exists;
+  }
+
+  /**
+   * Atualiza o tipo de gráfico de uma associação existente
+   */
+  static async updateTipoGrafico(
+    id: number,
+    id_tipo_grafico: number | null
+  ): Promise<UsuarioEquipamentoDashboard> {
+    const response = await api.put(`${this.endpoint}/item/${id}/tipo-grafico`, {
+      id_tipo_grafico: id_tipo_grafico || null
+    });
+    return response.data;
   }
 
   /**

@@ -119,7 +119,8 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
       const newItem = await UsuarioEquipamentoDashboardService.addEquipamentoToDashboard(
         user.id,
         selectedEquipamentoForAdd,
-        selectedMetricForAdd || null
+        selectedMetricForAdd || null,
+        null // Tipo de gráfico será escolhido no card
       );
       
       // Atualizar listas localmente
@@ -197,6 +198,7 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
     }
   };
 
+
   return (
     <Dialog
       open={open}
@@ -230,21 +232,30 @@ const DashboardEquipamentosSelector: React.FC<DashboardEquipamentosSelectorProps
                   Nenhum equipamento selecionado. Adicione equipamentos abaixo.
                 </Typography>
               ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {selectedDashboardItems.map((dashboardItem) => {
                     const equipamentoNome = dashboardItem.equipamento?.nome || 'Equipamento';
                     const metricaNome = dashboardItem.metrica ? ` - ${dashboardItem.metrica.nome}` : '';
                     return (
-                      <Chip
+                      <Box
                         key={dashboardItem.id}
-                        label={`${equipamentoNome}${metricaNome}`}
-                        onDelete={() => handleRemoveEquipamento(dashboardItem)}
-                        deleteIcon={<CloseIcon />}
-                        color="primary"
-                        variant="filled"
-                        disabled={saving}
-                        sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
-                      />
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        <Chip
+                          label={`${equipamentoNome}${metricaNome}`}
+                          onDelete={() => handleRemoveEquipamento(dashboardItem)}
+                          deleteIcon={<CloseIcon />}
+                          color="primary"
+                          variant="filled"
+                          disabled={saving}
+                          sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
+                        />
+                      </Box>
                     );
                   })}
                 </Box>

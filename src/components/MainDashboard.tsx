@@ -129,7 +129,18 @@ const Dashboard = () => {
         flexShrink: 0,
         borderBottom: '1px solid rgba(0,0,0,0.1)',
       }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+
+          mt: { 
+            xs: 6,
+            md: 4,
+            lg: 0,
+          },
+          flexWrap: {
+            xs: 'wrap',
+          },
+          gap: 1
+         }}>
           <Typography
             variant="h4"
             fontWeight="bold"
@@ -137,7 +148,7 @@ const Dashboard = () => {
           >
             Dashboard de Monitoramento
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <Tooltip title="Notificações">
               <IconButton
                 onClick={() => setNotificacoesDrawerOpen(true)}
@@ -328,6 +339,8 @@ const Dashboard = () => {
                         equipamentoNome={dashboardItem.equipamento?.nome || 'Equipamento'}
                         initialMetricId={dashboardItem.id_metrica || undefined}
                         dashboardItemId={dashboardItem.id}
+                        initialTipoGraficoId={dashboardItem.id_tipo_grafico || undefined}
+                        onTipoGraficoChange={fetchDashboardEquipamentos}
                       />
                     </Grid>
                   ))}
