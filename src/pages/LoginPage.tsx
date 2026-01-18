@@ -50,69 +50,113 @@ const LoginPage: React.FC = () => {
         width: '100vw',
         bgcolor: 'background.default',
         color: 'text.primary',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
       }}
     >
-      <Typography variant="h4" sx={{ mb: 4, color: 'primary.main' }}>
-        Faça Login
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ width: '300px' }}>
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          sx={{ mb: 2 }}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          label="Senha"
-          type="password"
-          variant="outlined"
-          fullWidth
-          sx={{ mb: 2 }}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{ borderRadius: '8px', mb: 1 }}
+      <Box
+        sx={{
+          backgroundColor: 'white',
+          borderRadius: 3,
+          boxShadow: '0px 8px 32px rgba(0,0,0,0.1)',
+          p: 4,
+          width: '100%',
+          maxWidth: '420px',
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            mb: 1,
+            color: 'primary.main',
+            fontWeight: 700,
+            textAlign: 'center',
+          }}
         >
-          Entrar
-        </Button>
-
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-          <Typography
-            onClick={() => navigate('/forgot-password')}
+          FLUXEN
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            mb: 4,
+            color: 'text.secondary',
+            textAlign: 'center',
+          }}
+        >
+          Faça login para continuar
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit}>
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            sx={{ mb: 2 }}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+          />
+          <TextField
+            label="Senha"
+            type="password"
+            variant="outlined"
+            fullWidth
+            sx={{ mb: 3 }}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
             sx={{
-              color: 'primary.main',
-              cursor: 'pointer',
-              fontSize: 'small',
-              textDecoration: 'none',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
+              borderRadius: '8px',
+              mb: 2,
+              py: 1.5,
+              fontSize: '1rem',
+              fontWeight: 600,
             }}
           >
-            Esqueci minha senha
-          </Typography>
+            Entrar
+          </Button>
 
-          <Typography
-            onClick={() => navigate('/register')}
-            sx={{
-              color: 'primary.main',
-              cursor: 'pointer',
-              fontSize: 'small',
-              textDecoration: 'none',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            }}
-          >
-            Cadastre-se
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Typography
+              onClick={() => navigate('/forgot-password')}
+              sx={{
+                color: 'primary.main',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                  color: 'primary.light',
+                },
+                transition: 'color 0.2s ease',
+              }}
+            >
+              Esqueci minha senha
+            </Typography>
+
+            <Typography
+              onClick={() => navigate('/register')}
+              sx={{
+                color: 'primary.main',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                  color: 'primary.light',
+                },
+                transition: 'color 0.2s ease',
+              }}
+            >
+              Cadastre-se
+            </Typography>
+          </Box>
         </Box>
       </Box>
     </Box>

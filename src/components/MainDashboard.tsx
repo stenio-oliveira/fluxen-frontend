@@ -116,54 +116,74 @@ const Dashboard = () => {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        marginLeft: sideMenuOpen ? sideMenuWidth : "0",
-        bgcolor: "grey.100",
-        width: "90vw",
+        marginLeft: sideMenuWidth,
+        bgcolor: "#f5f7fa",
+        width: `calc(100vw - ${sideMenuWidth})`,
         overflow: 'hidden',
+        transition: 'margin-left 0.3s ease, width 0.3s ease',
       }}
     >
       {/* Header */}
       <Box sx={{
-        p: { xs: 2, md: 4 },
-        pb: { xs: 1.5, md: 2 },
+        px: { xs: 2, md: 3 },
+        py: { xs: 1, md: 1.5 },
         flexShrink: 0,
-        borderBottom: '1px solid rgba(0,0,0,0.1)',
+        backgroundColor: 'white',
+        borderBottom: '1px solid rgba(0,0,0,0.08)',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.04)',
       }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-
-          mt: { 
-            xs: 6,
-            md: 4,
-            lg: 0,
-          },
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
           flexWrap: {
             xs: 'wrap',
           },
-          gap: 1
+          gap: 1.5
          }}>
           <Typography
-            variant="h4"
+            variant="h6"
             fontWeight="bold"
-            sx={{ color: 'primary.main' }}
+            sx={{ 
+              color: 'primary.main',
+              fontSize: { xs: '1.1rem', md: '1.25rem' },
+            }}
           >
             Dashboard de Monitoramento
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
             <Tooltip title="Notificações">
               <IconButton
                 onClick={() => setNotificacoesDrawerOpen(true)}
-                sx={{ position: 'relative' }}
+                size="small"
+                sx={{ 
+                  position: 'relative',
+                  color: 'text.primary',
+                  '&:hover': {
+                    backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                    color: 'primary.main',
+                  },
+                }}
               >
                 <Badge badgeContent={countNaoVisualizadas} color="error">
-                  <NotificationsIcon />
+                  <NotificationsIcon fontSize="small" />
                 </Badge>
               </IconButton>
             </Tooltip>
             <Button
-              variant="outlined"
-              size="medium"
+              variant="contained"
+              size="small"
               startIcon={<SettingsIcon />}
               onClick={() => setSelectorOpen(true)}
+              sx={{
+                backgroundColor: 'primary.main',
+                fontSize: '0.875rem',
+                py: 0.75,
+                px: 2,
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                },
+              }}
             >
               Gerenciar Equipamentos
             </Button>
@@ -267,14 +287,19 @@ const Dashboard = () => {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          p: { xs: 3, md: 4 },
-          pt: { xs: 2, md: 2.5 },
+          p: { xs: 1.5, md: 2 },
+          pt: { xs: 1.5, md: 2 },
         }}
       >
         <Typography
-          variant="h5"
+          variant="h6"
           fontWeight="bold"
-          sx={{ mb: 2, color: 'text.primary', flexShrink: 0 }}
+          sx={{ 
+            mb: 2, 
+            color: 'primary.main', 
+            flexShrink: 0,
+            fontSize: { xs: '1rem', md: '1.1rem' },
+          }}
         >
           Meus Equipamentos Monitorados
         </Typography>

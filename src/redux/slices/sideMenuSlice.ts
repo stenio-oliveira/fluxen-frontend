@@ -6,8 +6,8 @@ export interface SideMenuState {
 }
 
 const initialState: SideMenuState = {
-  sideMenuOpen: false,
-  sideMenuWidth: '0',
+  sideMenuOpen: true, // Sidebar sempre aberta por padrão
+  sideMenuWidth: '250px', // Largura quando expandida
 };
 
 export const sideMenuSlice = createSlice({
@@ -16,7 +16,7 @@ export const sideMenuSlice = createSlice({
   reducers: {
     toggleSideMenu: (state) => {
       state.sideMenuOpen = !state.sideMenuOpen;
-      state.sideMenuWidth = state.sideMenuOpen ? '250px' : '0';
+      state.sideMenuWidth = state.sideMenuOpen ? '250px' : '64px';
     },
   },
 });

@@ -48,8 +48,12 @@ const EquipamentoForm: React.FC<EquipamentoFormProps> = ({ disabled = false }) =
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     console.log('handleChange - name:', name, 'value:', value);
+    
+    // Limitar o campo nome a 28 caracteres
+    const limitedValue = name === 'nome' && value.length > 28 ? value.slice(0, 28) : value;
+    
     setFormData((prevData) => {
-      const newData = { ...prevData, [name]: value };
+      const newData = { ...prevData, [name]: limitedValue };
       console.log('handleChange - newData:', newData);
       return newData;
     });
@@ -83,6 +87,8 @@ const EquipamentoForm: React.FC<EquipamentoFormProps> = ({ disabled = false }) =
     // Validar campos obrigatórios
     if (!formData.nome || formData.nome.trim() === '') {
       errors.nome = 'Nome do equipamento é obrigatório';
+    } else if (formData.nome.length > 28) {
+      errors.nome = 'Nome do equipamento deve ter no máximo 28 caracteres';
     }
 
     // Validação específica para criação (quando não há id)
@@ -206,6 +212,7 @@ const EquipamentoForm: React.FC<EquipamentoFormProps> = ({ disabled = false }) =
                 onChange={handleChange}
                 disabled={disabled}
                 required
+                maxLength={field.name === 'nome' ? 28 : undefined}
               />
               {validationErrors[field.name] && (
                 <span className="mt-1 text-xs text-red-500">

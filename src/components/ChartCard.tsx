@@ -298,22 +298,45 @@ const ChartCard: React.FC<ChartCardProps> = ({
       sx={{
         minHeight: '400px',
         height: '100%',
-        boxShadow: 3,
-        border: '1px solid lightgray',
-        borderRadius: 0,
+        boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(0,0,0,0.05)',
+        borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         backgroundColor: 'white',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: '0px 4px 16px rgba(0,0,0,0.12)',
+          transform: 'translateY(-2px)',
+        },
       }}
     >
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
         {/* Cabeçalho com nome e ID do equipamento */}
-        <Box sx={{ mb: 2, pb: 1.5, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+        <Box sx={{ 
+          mb: 2, 
+          pb: 1.5, 
+          borderBottom: '1px solid rgba(0,0,0,0.08)',
+        }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600, 
+              mb: 0.5,
+              color: 'primary.main',
+            }}
+          >
             {equipamentoNome}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              fontFamily: 'monospace',
+              fontSize: '0.8rem',
+            }}
+          >
             ID: {equipamentoId}
           </Typography>
         </Box>
@@ -346,14 +369,14 @@ const ChartCard: React.FC<ChartCardProps> = ({
                   }
                 }
               }}
-              sx={{ borderRadius: 0 }}
+              sx={{ borderRadius: 1 }}
               MenuProps={{
                 PaperProps: {
                   sx: {
-                    borderRadius: 0,
+                    borderRadius: 1,
                     maxHeight: 300,
                     '& .MuiMenuItem-root': {
-                      borderRadius: 0,
+                      borderRadius: 1,
                     },
                   },
                 },
@@ -380,14 +403,14 @@ const ChartCard: React.FC<ChartCardProps> = ({
               label="Métrica"
               onChange={(e) => setSelectedMetric(e.target.value as number)}
               disabled={metrics.length === 0}
-              sx={{ borderRadius: 0 }}
+              sx={{ borderRadius: 1 }}
               MenuProps={{
                 PaperProps: {
                   sx: {
-                    borderRadius: 0,
+                    borderRadius: 1,
                     maxHeight: 300,
                     '& .MuiMenuItem-root': {
-                      borderRadius: 0,
+                      borderRadius: 1,
                     },
                   },
                 },
@@ -416,15 +439,15 @@ const ChartCard: React.FC<ChartCardProps> = ({
                 value={timeRange}
                 label="Intervalo"
                 onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-                sx={{ borderRadius: 0 }}
+                sx={{ borderRadius: 1 }}
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      borderRadius: 0,
+                      borderRadius: 1,
                       maxHeight: 300,
                       zIndex: 1400,
                       '& .MuiMenuItem-root': {
-                        borderRadius: 0,
+                        borderRadius: 1,
                       },
                     },
                   },
@@ -569,15 +592,15 @@ const ChartCard: React.FC<ChartCardProps> = ({
                       }
                     }
                   }}
-                                  sx={{ borderRadius: 0 }}
+                                  sx={{ borderRadius: 1 }}
                                   MenuProps={{
                                       PaperProps: {
                                           sx: {
-                                              borderRadius: 0,
+                                              borderRadius: 1,
                                               maxHeight: 300,
                                               zIndex: 1400,
                                               '& .MuiMenuItem-root': {
-                                                  borderRadius: 0,
+                                                  borderRadius: 1,
                                               },
                                           },
                                       },
@@ -604,15 +627,15 @@ const ChartCard: React.FC<ChartCardProps> = ({
                                   label="Métrica"
                                   onChange={(e) => setSelectedMetric(e.target.value as number)}
                                   disabled={metrics.length === 0}
-                                  sx={{ borderRadius: 0 }}
+                                  sx={{ borderRadius: 1 }}
                                   MenuProps={{
                                       PaperProps: {
                                           sx: {
-                                              borderRadius: 0,
+                                              borderRadius: 1,
                                               maxHeight: 300,
                                               zIndex: 1400,
                                               '& .MuiMenuItem-root': {
-                                                  borderRadius: 0,
+                                                  borderRadius: 1,
                                               },
                                           },
                                       },
@@ -641,14 +664,14 @@ const ChartCard: React.FC<ChartCardProps> = ({
                                       value={timeRange}
                                       label="Intervalo"
                                       onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-                                      sx={{ borderRadius: 0 }}
+                                      sx={{ borderRadius: 1 }}
                                       MenuProps={{
                                           PaperProps: {
                                               sx: {
-                                                  borderRadius: 0,
+                                                  borderRadius: 1,
                                                   maxHeight: 300,
                                                   '& .MuiMenuItem-root': {
-                                                      borderRadius: 0,
+                                                      borderRadius: 1,
                                                   },
                                               },
                                           },
