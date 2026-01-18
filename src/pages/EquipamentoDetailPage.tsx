@@ -36,6 +36,7 @@ const EquipamentoDetail = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useSelector((state: RootState) => state.user);
+  const { sideMenuWidth } = useSelector((state: RootState) => state.sideMenu);
   const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
 
@@ -85,10 +86,12 @@ const EquipamentoDetail = () => {
         minHeight: "100vh",
         bgcolor: "grey.50",
         p: isMobile ? 2 : 4,
-        pt: isMobile ? 6 : 4, // Padding-top maior no mobile para evitar sobreposição do botão de navegação
-        width: isMobile ? "100vw" : "90vw",
+        pt: isMobile ? 6 : 4,
+        marginLeft: sideMenuWidth,
+        width: `calc(100vw - ${sideMenuWidth})`,
         maxWidth: "100%",
         boxSizing: "border-box",
+        transition: 'margin-left 0.3s ease, width 0.3s ease',
       }}
     >
       <Box sx={{ maxWidth: 900, mx: "auto" }}>

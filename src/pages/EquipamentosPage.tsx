@@ -8,6 +8,7 @@ import type { RootState } from "../redux/store";
 
 const EquipamentosPage = () => {
   const { rows } = useSelector((state: RootState) => state.equipamentosTable);
+  const { sideMenuWidth } = useSelector((state: RootState) => state.sideMenu);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -20,10 +21,12 @@ const EquipamentosPage = () => {
         minHeight: "100vh", 
         bgcolor: "grey.50", 
         p: isMobile ? 2 : 3,
-        pt: isMobile ? 6 : 3, // Padding-top maior no mobile para evitar sobreposição do botão de navegação
-        width: isMobile ? "100vw" : "90vw",
+        pt: isMobile ? 6 : 3,
+        marginLeft: sideMenuWidth,
+        width: `calc(100vw - ${sideMenuWidth})`,
         maxWidth: "100%",
         boxSizing: "border-box",
+        transition: 'margin-left 0.3s ease, width 0.3s ease',
       }}
     >
       <Typography 

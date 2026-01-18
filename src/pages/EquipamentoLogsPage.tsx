@@ -9,8 +9,9 @@ import { useEquipamentoStatus } from "../hooks/useEquipamentoStatus";
 import { useState, useEffect } from "react";
 import EquipamentoService from "../services/equipamentoService";
 import type { Equipamento } from "../types/Equipamento";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFeedback } from "../redux/slices/feedBackSlice";
+import type { RootState } from "../redux/store";
 
 const EquipamentoLogsPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const EquipamentoLogsPage = () => {
   const { isOnline, lastUpdate, isRefreshing } = useEquipamentoStatus();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { sideMenuWidth } = useSelector((state: RootState) => state.sideMenu);
   const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
@@ -48,10 +50,12 @@ const EquipamentoLogsPage = () => {
         minHeight: "100vh",
         bgcolor: "grey.50",
         p: isMobile ? 2 : 4,
-        pt: isMobile ? 6 : 4, // Padding-top maior no mobile para evitar sobreposição do botão de navegação
-        width: isMobile ? "100vw" : "90vw",
+        pt: isMobile ? 6 : 4,
+        marginLeft: sideMenuWidth,
+        width: `calc(100vw - ${sideMenuWidth})`,
         maxWidth: "100%",
         boxSizing: "border-box",
+        transition: 'margin-left 0.3s ease, width 0.3s ease',
       }}
     >
       <Box sx={{ maxWidth: "100%", mx: "auto" }}>
