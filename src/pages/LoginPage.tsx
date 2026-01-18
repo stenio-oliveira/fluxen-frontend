@@ -22,11 +22,20 @@ const LoginPage: React.FC = () => {
       dispatch(login({ user }));
       dispatch(setFeedback({ message: 'Login realizado com sucesso', type: 'success'}));
       navigate('/');
-    }catch(e){ 
-      dispatch(setFeedback({ 
-        message: `Erro ao fazer login: ${e}`, 
-        type: 'error'
-      }))
+    } catch (e: any) {
+      // Se for erro 401, exibir a mensagem do backend
+      if (e?.response?.status === 401 && e?.response?.data?.message) {
+        dispatch(setFeedback({ 
+          message: e.response.data.message,
+          type: 'error'
+        }))
+      } else {
+        // Para outros erros, exibir mensagem genérica
+        dispatch(setFeedback({
+          message: `Erro ao fazer login: ${e?.response?.data?.message || e?.message || e}`,
+          type: 'error'
+        }))
+      }
     }
   };
 
