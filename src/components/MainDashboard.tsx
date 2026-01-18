@@ -30,7 +30,7 @@ import type { UsuarioEquipamentoDashboard } from "../types/UsuarioEquipamentoDas
 import type { Notificacao } from "../types/Notificacao";
 
 const Dashboard = () => {
-  const {sideMenuOpen, sideMenuWidth } = useSelector((state: RootState) => state.sideMenu);
+  const { sideMenuWidth } = useSelector((state: RootState) => state.sideMenu);
   const { user } = useSelector((state: RootState) => state.user);
 
   const [dashboardEquipamentos, setDashboardEquipamentos] = useState<UsuarioEquipamentoDashboard[]>([]);

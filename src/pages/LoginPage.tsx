@@ -5,6 +5,7 @@ import { login } from '../redux/slices/userSlice';
 import { setFeedback } from '../redux/slices/feedBackSlice';
 import AuthService from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -63,17 +64,22 @@ const LoginPage: React.FC = () => {
           maxWidth: '420px',
         }}
       >
-        <Typography
-          variant="h4"
+        <Box
           sx={{
-            mb: 1,
-            color: 'primary.main',
-            fontWeight: 700,
-            textAlign: 'center',
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 3,
           }}
         >
-          FLUXEN
-        </Typography>
+          <img
+            src={logo}
+            alt="FLUXEN Logo"
+            style={{
+              maxWidth: '200px',
+              height: 'auto',
+            }}
+          />
+        </Box>
         <Typography
           variant="body2"
           sx={{
