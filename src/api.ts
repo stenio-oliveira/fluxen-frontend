@@ -12,6 +12,20 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Injetar tenantId do usuário em todas as requisições
+  const userData = localStorage.getItem('user');
+  if (userData) {
+    try {
+      const user = JSON.parse(userData);
+      if (user.id_tenant) {
+        config.headers['X-Tenant-Id'] = user.id_tenant.toString();
+      }
+    } catch (error) {
+      console.error('Erro ao parsear dados do usuário para obter tenantId:', error);
+    }
+  }
+
   return config;
 });
 
