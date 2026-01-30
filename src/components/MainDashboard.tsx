@@ -117,7 +117,7 @@ const Dashboard = () => {
         flexDirection: 'column',
         height: '100vh',
         marginLeft: sideMenuWidth,
-        bgcolor: "#f5f7fa",
+        bgcolor: "#F4F7F9",
         width: `calc(100vw - ${sideMenuWidth})`,
         overflow: 'hidden',
         transition: 'margin-left 0.3s ease, width 0.3s ease',
@@ -125,8 +125,8 @@ const Dashboard = () => {
     >
       {/* Header */}
       <Box sx={{
-        px: { xs: 2, md: 3 },
-        py: { xs: 1, md: 1.5 },
+        px: { xs: 1.5, md: 2 },
+        py: { xs: 0.75, md: 1 },
         flexShrink: 0,
         backgroundColor: 'white',
         borderBottom: '1px solid rgba(0,0,0,0.08)',
@@ -141,16 +141,31 @@ const Dashboard = () => {
           },
           gap: 1.5
          }}>
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{ 
-              color: 'primary.main',
-              fontSize: { xs: '1.1rem', md: '1.25rem' },
-            }}
-          >
-            Dashboard de Monitoramento
-          </Typography>
+          <Box>
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              sx={{ 
+                color: '#00204a',
+                fontSize: { xs: '0.95rem', md: '1rem' },
+                lineHeight: 1.2,
+              }}
+            >
+              Dashboard de Monitoramento
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#00204a',
+                fontSize: { xs: '0.75rem', md: '0.8rem' },
+                fontWeight: 500,
+                mt: 0.25,
+                opacity: 0.8,
+              }}
+            >
+              Meus Equipamentos Monitorados
+            </Typography>
+          </Box>
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
             <Tooltip title="Notificações">
               <IconButton
@@ -176,12 +191,12 @@ const Dashboard = () => {
               startIcon={<SettingsIcon />}
               onClick={() => setSelectorOpen(true)}
               sx={{
-                backgroundColor: 'primary.main',
-                fontSize: '0.875rem',
-                py: 0.75,
-                px: 2,
+                backgroundColor: '#1FB6D5',
+                fontSize: '0.75rem',
+                py: 0.5,
+                px: 1.5,
                 '&:hover': {
-                  backgroundColor: 'primary.dark',
+                  backgroundColor: '#1599B8',
                 },
               }}
             >
@@ -287,23 +302,10 @@ const Dashboard = () => {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          p: { xs: 1.5, md: 2 },
-          pt: { xs: 1.5, md: 2 },
+          p: { xs: 1, md: 1 },
+          pt: { xs: 1, md: 1 },
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{ 
-            mb: 2, 
-            color: 'primary.main', 
-            flexShrink: 0,
-            fontSize: { xs: '1rem', md: '1.1rem' },
-          }}
-        >
-          Meus Equipamentos Monitorados
-        </Typography>
-
         {loadingEquipamentos ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
             <CircularProgress size={40} />
@@ -353,11 +355,12 @@ const Dashboard = () => {
                   },
                 }}
               >
-                <Grid container spacing={3} justifyContent="center">
+                <Grid container spacing={0.2} justifyContent="center">
                   {dashboardEquipamentos.map((dashboardItem) => (
                     <Grid
                       key={dashboardItem.id}
                       size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}
+                      sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                     >
                       <ChartCard
                         equipamentoId={dashboardItem.id_equipamento}

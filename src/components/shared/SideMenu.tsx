@@ -98,8 +98,8 @@ export default function SideMenu() {
         left: 0,
         top: 0,
         height: "100vh",
-        width: sideMenuOpen ? "250px" : "64px",
-        backgroundColor: "#1a237e", // Azul escuro estilo Sirros
+        width: sideMenuOpen ? "220px" : "64px",
+        background: "#00204a",
         color: "#ffffff",
         transition: "width 0.3s ease",
         overflow: "hidden",
@@ -226,21 +226,22 @@ export default function SideMenu() {
                   sx={{
                     mx: 1,
                     borderRadius: "8px",
-                    backgroundColor: isActive ? "rgba(66, 165, 245, 0.2)" : "transparent",
+                    backgroundColor: isActive ? "#1FB6D5" : "transparent",
                     color: "#ffffff",
                     justifyContent: sideMenuOpen ? "flex-start" : "center",
                     "&:hover": {
                       backgroundColor: isActive
-                        ? "rgba(66, 165, 245, 0.3)"
-                        : "rgba(255,255,255,0.1)",
+                        ? "#1FB6D5"
+                        : "rgba(31, 182, 213, 0.15)",
                       color: "#ffffff",
+                      boxShadow: isActive ? "0 0 8px rgba(31, 182, 213, 0.4)" : "none",
                     },
                     transition: "all 0.2s ease",
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      color: isActive ? "#42a5f5" : "#ffffff",
+                      color: isActive ? "#ffffff" : "#ffffff",
                       minWidth: sideMenuOpen ? 40 : 0,
                       justifyContent: "center",
                     }}

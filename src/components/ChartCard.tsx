@@ -14,10 +14,14 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Popover,
+  Divider,
+  Button,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useEffect, useState, useRef } from 'react';
 import {
   Chart as ChartJS,
@@ -79,11 +83,11 @@ const centerTextPlugin = {
     const chartWidth = chartArea.right - chartArea.left;
     const chartHeight = chartArea.bottom - chartArea.top;
     const minDimension = Math.min(chartWidth, chartHeight);
-    const fontSize = Math.max(36, minDimension / 6); // Fonte responsiva, mínimo 36px para mais destaque
+    const fontSize = Math.max(16, minDimension / 12); // Fonte responsiva, mínimo 16px (reduzido)
 
     // Desenhar valor principal em destaque (maior e mais visível)
-    ctx.fillStyle = '#000000';
-    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.fillStyle = 'black';
+    ctx.font = `bold 18px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -149,7 +153,10 @@ const ChartCard: React.FC<ChartCardProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
+  const [settingsAnchorEl, setSettingsAnchorEl] = useState<HTMLElement | null>(null);
   const refreshIntervalRef = useRef<number | null>(null);
+
+  const settingsOpen = Boolean(settingsAnchorEl);
 
   // Atualizar tipo de gráfico quando initialTipoGraficoId mudar
   useEffect(() => {
@@ -249,8 +256,56 @@ const ChartCard: React.FC<ChartCardProps> = ({
     fetchChartData();
   };
 
+  const handleSettingsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSettingsAnchorEl(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setSettingsAnchorEl(null);
+  };
+
   const renderChart = () => {
     if (!chartData) return null;
+
+    // Aplicar estilizações aos datasets baseado no tipo de gráfico
+    const styledChartData = {
+      ...chartData,
+      datasets: chartData.datasets.map((dataset) => {
+        const baseDataset = { ...dataset };
+
+        switch (chartType) {
+          case 'line':
+            return {
+              ...baseDataset,
+              borderColor: '#1FB6D5',
+              backgroundColor: 'rgba(31, 182, 213, 0.3)',
+              borderWidth: 2,
+            };
+          case 'bar':
+            return {
+              ...baseDataset,
+              backgroundColor: 'rgba(31, 182, 213, 0.8)',
+              borderColor: '#1FB6D5',
+              borderWidth: 1,
+            };
+          case 'doughnut':
+            return {
+              ...baseDataset,
+              backgroundColor: [
+                'rgba(31, 182, 213, 0.8)',  // Preenchido - ciano tech
+                'rgba(217, 222, 227, 0.8)'  // Restante - cinza claro
+              ],
+              borderColor: [
+                '#1FB6D5',  // Preenchido
+                '#D9DEE3'   // Restante
+              ],
+              borderWidth: 1,
+            };
+          default:
+            return baseDataset;
+        }
+      }),
+    };
 
     const chartOptions: any = {
       responsive: true,
@@ -283,11 +338,11 @@ const ChartCard: React.FC<ChartCardProps> = ({
 
     switch (chartType) {
       case 'line':
-        return <Line data={chartData} options={chartOptions} />;
+        return <Line data={styledChartData} options={chartOptions} />;
       case 'doughnut':
-        return <Doughnut data={chartData} options={chartOptions} />;
+        return <Doughnut data={styledChartData} options={chartOptions} />;
       case 'bar':
-        return <Bar data={chartData} options={chartOptions} />;
+        return <Bar data={styledChartData} options={chartOptions} />;
       default:
         return null;
     }
@@ -296,10 +351,13 @@ const ChartCard: React.FC<ChartCardProps> = ({
   return (
     <Card
       sx={{
-        minHeight: '400px',
+        maxHeight: '400px',
+        maxWidth: '250px',
         height: '100%',
-        boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
+        width: '100%',
+        boxShadow: '0px 6px 18px rgba(0,0,0,0.06)',
         border: '1px solid rgba(0,0,0,0.05)',
+        borderTop: '3px solid #1FB6D5',
         borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -307,188 +365,197 @@ const ChartCard: React.FC<ChartCardProps> = ({
         backgroundColor: 'white',
         transition: 'all 0.3s ease',
         '&:hover': {
-          boxShadow: '0px 4px 16px rgba(0,0,0,0.12)',
+          boxShadow: '0px 8px 24px rgba(0,0,0,0.1)',
           transform: 'translateY(-2px)',
         },
       }}
     >
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 1 }}>
         {/* Cabeçalho com nome e ID do equipamento */}
         <Box sx={{ 
-          mb: 2, 
-          pb: 1.5, 
+          mb: 0.75,
+          pb: 0.5, 
           borderBottom: '1px solid rgba(0,0,0,0.08)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
         }}>
-          <Typography 
+          <Box>
+            <Typography
             variant="h6" 
             sx={{ 
               fontWeight: 600, 
-              mb: 0.5,
-              color: 'primary.main',
+              mb: 0.25,
+              color: '#00204a',
+              fontSize: '0.9rem',
             }}
-          >
-            {equipamentoNome}
-          </Typography>
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            sx={{ 
-              fontFamily: 'monospace',
-              fontSize: '0.8rem',
-            }}
-          >
-            ID: {equipamentoId}
-          </Typography>
+            >
+              {equipamentoNome}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontFamily: 'monospace',
+                fontSize: '0.75rem',
+              }}
+            >
+              ID: {equipamentoId}
+            </Typography>
+          </Box>
+          <Tooltip title="Configurações">
+            <IconButton
+              size="small"
+              onClick={handleSettingsClick}
+              sx={{
+                mt: -0.5,
+                color: '#00204a',
+                '&:hover': {
+                  backgroundColor: 'rgba(10, 90, 110, 0.08)',
+                },
+              }}
+            >
+              <SettingsIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Visualizar em tela cheia">
+            <IconButton
+              size="small"
+              onClick={() => setFullscreenOpen(true)}
+              sx={{
+                mt: -0.5,
+                color: '#00204a',
+                '&:hover': {
+                  backgroundColor: 'rgba(10, 90, 110, 0.08)',
+                },
+              }}
+            >
+              <FullscreenIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
 
-        {/* Controles */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Tipo de Gráfico</InputLabel>
-            <Select
-              value={chartType}
-              label="Tipo de Gráfico"
-              onChange={async (e) => {
-                const newChartType = e.target.value as ChartType;
-                const previousChartType = chartType;
-                setChartType(newChartType);
+        {/* Popover de Configurações */}
+        <Popover
+          open={settingsOpen}
+          anchorEl={settingsAnchorEl}
+          onClose={handleSettingsClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          PaperProps={{
+            sx: {
+              mt: 0.5,
+              minWidth: 200,
+              maxWidth: 280,
+              p: 1.5,
+              boxShadow: '0px 4px 12px rgba(0,0,0,0.15)',
+            },
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#00204a' }}>
+            Configurações do Gráfico
+          </Typography>
 
-                // Atualizar no backend se dashboardItemId estiver disponível
-                if (dashboardItemId && onTipoGraficoChange) {
-                  try {
-                    const newTipoGraficoId = chartTypeToTipoGraficoId(newChartType);
-                    await UsuarioEquipamentoDashboardService.updateTipoGrafico(
-                      dashboardItemId,
-                      newTipoGraficoId
-                    );
-                     onTipoGraficoChange();
-                  } catch (error) {
-                    console.error('Erro ao atualizar tipo de gráfico:', error);
-                    // Reverter para o valor anterior em caso de erro
-                    setChartType(previousChartType);
-                  }
-                }
-              }}
-              sx={{ borderRadius: 1 }}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 1,
-                    maxHeight: 300,
-                    '& .MuiMenuItem-root': {
-                      borderRadius: 1,
-                    },
-                  },
-                },
-                anchorOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'left',
-                },
-              }}
-            >
-              <MenuItem value="line" sx={{ borderRadius: 0 }}>Linha</MenuItem>
-              <MenuItem value="doughnut" sx={{ borderRadius: 0 }}>Rosca</MenuItem>
-              <MenuItem value="bar" sx={{ borderRadius: 0 }}>Barras</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Métrica</InputLabel>
-            <Select
-              value={selectedMetric}
-              label="Métrica"
-              onChange={(e) => setSelectedMetric(e.target.value as number)}
-              disabled={metrics.length === 0}
-              sx={{ borderRadius: 1 }}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 1,
-                    maxHeight: 300,
-                    '& .MuiMenuItem-root': {
-                      borderRadius: 1,
-                    },
-                  },
-                },
-                anchorOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'left',
-                },
-              }}
-            >
-              {metrics.map((metric) => (
-                <MenuItem key={metric.id} value={metric.id} sx={{ borderRadius: 0 }}>
-                  {metric.nome} ({metric.unidade})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {chartType !== 'doughnut' && (
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Intervalo</InputLabel>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Tipo de Gráfico</InputLabel>
               <Select
-                value={timeRange}
-                label="Intervalo"
-                onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-                sx={{ borderRadius: 1 }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      borderRadius: 1,
-                      maxHeight: 300,
-                      zIndex: 1400,
-                      '& .MuiMenuItem-root': {
-                        borderRadius: 1,
-                      },
-                    },
-                  },
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'left',
-                  },
+                value={chartType}
+                label="Tipo de Gráfico"
+                onChange={async (e) => {
+                  const newChartType = e.target.value as ChartType;
+                  const previousChartType = chartType;
+                  setChartType(newChartType);
+
+                  // Atualizar no backend se dashboardItemId estiver disponível
+                  if (dashboardItemId && onTipoGraficoChange) {
+                    try {
+                      const newTipoGraficoId = chartTypeToTipoGraficoId(newChartType);
+                      await UsuarioEquipamentoDashboardService.updateTipoGrafico(
+                        dashboardItemId,
+                        newTipoGraficoId
+                      );
+                      onTipoGraficoChange();
+                    } catch (error) {
+                      console.error('Erro ao atualizar tipo de gráfico:', error);
+                      setChartType(previousChartType);
+                    }
+                  }
                 }}
               >
-                <MenuItem value="5min" sx={{ borderRadius: 0 }}>Últimos 5 min</MenuItem>
-                <MenuItem value="15min" sx={{ borderRadius: 0 }}>Últimos 15 min</MenuItem>
-                <MenuItem value="30min" sx={{ borderRadius: 0 }}>Últimos 30 min</MenuItem>
-                <MenuItem value="1h" sx={{ borderRadius: 0 }}>Última 1 hora</MenuItem>
-                <MenuItem value="6h" sx={{ borderRadius: 0 }}>Últimas 6 horas</MenuItem>
-                <MenuItem value="24h" sx={{ borderRadius: 0 }}>Últimas 24 horas</MenuItem>
-                <MenuItem value="7d" sx={{ borderRadius: 0 }}>Últimos 7 dias</MenuItem>
+                <MenuItem value="line">Linha</MenuItem>
+                <MenuItem value="doughnut">Rosca</MenuItem>
+                <MenuItem value="bar">Barras</MenuItem>
               </Select>
             </FormControl>
-          )}
 
-          <Box sx={{ flexGrow: 1 }} />
+            <FormControl size="small" fullWidth>
+              <InputLabel>Métrica</InputLabel>
+              <Select
+                value={selectedMetric}
+                label="Métrica"
+                onChange={(e) => setSelectedMetric(e.target.value as number)}
+                disabled={metrics.length === 0}
+              >
+                {metrics.map((metric) => (
+                  <MenuItem key={metric.id} value={metric.id}>
+                    {metric.nome} ({metric.unidade})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <Tooltip title="Atualizar gráfico">
-            <IconButton size="small" onClick={handleRefresh} disabled={loading}>
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
+            {chartType !== 'doughnut' && (
+              <FormControl size="small" fullWidth>
+                <InputLabel>Intervalo</InputLabel>
+                <Select
+                  value={timeRange}
+                  label="Intervalo"
+                  onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+                >
+                  <MenuItem value="5min">Últimos 5 min</MenuItem>
+                  <MenuItem value="15min">Últimos 15 min</MenuItem>
+                  <MenuItem value="30min">Últimos 30 min</MenuItem>
+                  <MenuItem value="1h">Última 1 hora</MenuItem>
+                  <MenuItem value="6h">Últimas 6 horas</MenuItem>
+                  <MenuItem value="24h">Últimas 24 horas</MenuItem>
+                  <MenuItem value="7d">Últimos 7 dias</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
-          <Tooltip title="Visualizar em tela cheia">
-            <IconButton size="small" onClick={() => setFullscreenOpen(true)}>
-              <FullscreenIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
+            <Divider sx={{ my: 0.5 }} />
+
+            <Button
+              size="small"
+              startIcon={<RefreshIcon />}
+              onClick={() => {
+                handleRefresh();
+                handleSettingsClose();
+              }}
+              disabled={loading}
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 0.5 }}
+            >
+              Atualizar Gráfico
+            </Button>
+          </Box>
+        </Popover>
 
         {/* Gráfico ou estados de loading/erro */}
-        <Box sx={{ flex: 1, minHeight: '300px', position: 'relative' }}>
+        <Box sx={{
+          flex: 1,
+          minHeight: chartType === 'doughnut' ? '180px' : '140px',
+          maxHeight: chartType === 'doughnut' ? '180px' : '140px',
+          position: 'relative'
+        }}>
           {loading && !chartData ? (
             <Box
               sx={{
@@ -519,11 +586,16 @@ const ChartCard: React.FC<ChartCardProps> = ({
 
         {/* Informações adicionais para gráfico de rosca */}
         {chartType === 'doughnut' && chartData?.metadata && (
-          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
-            <Typography variant="body2" color="text.secondary">
-              Valor atual: {chartData.metadata.currentValue?.toFixed(2)} {chartData.metadata.metrica.unidade}
+          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+            <Typography variant="body2" sx={{ color: '#00204a', fontWeight: 500 }}>
+              Valor atual: <span style={{ color: '#666' }}>{chartData.metadata.currentValue?.toFixed(2)} {chartData.metadata.metrica.unidade}</span>
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            {chartData.metadata.minValue !== undefined && (
+              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem', mt: 0.5 }}>
+                Valor mínimo: {chartData.metadata.minValue?.toFixed(2)} {chartData.metadata.metrica.unidade}
+              </Typography>
+            )}
+            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem', mt: 0.5 }}>
               Valor máximo: {chartData.metadata.maxValue?.toFixed(2)} {chartData.metadata.metrica.unidade}
             </Typography>
           </Box>
@@ -738,11 +810,16 @@ const ChartCard: React.FC<ChartCardProps> = ({
 
           {/* Informações adicionais para gráfico de rosca */}
           {chartType === 'doughnut' && chartData?.metadata && (
-            <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
-              <Typography variant="body2" color="text.secondary">
-                Valor atual: {chartData.metadata.currentValue?.toFixed(2)} {chartData.metadata.metrica.unidade}
+            <Box sx={{ mt: 2, pt: 1.5, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+              <Typography variant="body2" sx={{ color: '#0A5A6E', fontWeight: 500 }}>
+                Valor atual: <span style={{ color: '#666' }}>{chartData.metadata.currentValue?.toFixed(2)} {chartData.metadata.metrica.unidade}</span>
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              {chartData.metadata.minValue !== undefined && (
+                <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem', mt: 0.5 }}>
+                  Valor mínimo: {chartData.metadata.minValue?.toFixed(2)} {chartData.metadata.metrica.unidade}
+                </Typography>
+              )}
+              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem', mt: 0.5 }}>
                 Valor máximo: {chartData.metadata.maxValue?.toFixed(2)} {chartData.metadata.metrica.unidade}
               </Typography>
             </Box>

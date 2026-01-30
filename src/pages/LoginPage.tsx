@@ -59,7 +59,7 @@ const LoginPage: React.FC = () => {
           backgroundColor: 'white',
           borderRadius: 3,
           boxShadow: '0px 8px 32px rgba(0,0,0,0.1)',
-          p: 4,
+          p: 3,
           width: '100%',
           maxWidth: '420px',
         }}
@@ -68,14 +68,14 @@ const LoginPage: React.FC = () => {
           sx={{
             display: 'flex',
             justifyContent: 'center',
-            mb: 3,
+            mb: 2,
           }}
         >
           <img
             src={logo}
             alt="FLUXEN Logo"
             style={{
-              maxWidth: '200px',
+              maxWidth: '180px',
               height: 'auto',
             }}
           />
@@ -83,7 +83,7 @@ const LoginPage: React.FC = () => {
         <Typography
           variant="body2"
           sx={{
-            mb: 4,
+            mb: 2,
             color: 'text.secondary',
             textAlign: 'center',
           }}
@@ -95,7 +95,7 @@ const LoginPage: React.FC = () => {
             label="Email"
             variant="outlined"
             fullWidth
-            sx={{ mb: 2 }}
+            sx={{ mb: 1.5 }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
@@ -105,7 +105,7 @@ const LoginPage: React.FC = () => {
             type="password"
             variant="outlined"
             fullWidth
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
@@ -117,8 +117,8 @@ const LoginPage: React.FC = () => {
             fullWidth
             sx={{
               borderRadius: '8px',
-              mb: 2,
-              py: 1.5,
+              mb: 1.5,
+              py: 1.2,
               fontSize: '1rem',
               fontWeight: 600,
             }}
@@ -126,7 +126,7 @@ const LoginPage: React.FC = () => {
             Entrar
           </Button>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
             <Typography
               onClick={() => navigate('/forgot-password')}
               sx={{
