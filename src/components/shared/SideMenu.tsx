@@ -19,6 +19,8 @@ import type { RootState } from "../../redux/store";
 import { logout } from "../../redux/slices/userSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toggleSideMenu } from "../../redux/slices/sideMenuSlice";
+import logoClaro from "../../assets/logo-claro.png";
+import logoVertical from "../../assets/logo-vertical.png";
 
 export default function SideMenu() {
   const user = useSelector((state: RootState) => state.user.user);
@@ -112,45 +114,72 @@ export default function SideMenu() {
       {/* Logo/Header */}
       <Box
         sx={{
-          p: 2,
+          p: sideMenuOpen ? 2 : 1,
           borderBottom: "1px solid rgba(255,255,255,0.1)",
-          minHeight: "80px",
+          minHeight: sideMenuOpen ? "80px" : "auto",
           display: "flex",
+          flexDirection: sideMenuOpen ? "row" : "column",
           alignItems: "center",
           justifyContent: sideMenuOpen ? "space-between" : "center",
           gap: 1,
         }}
       >
-        {sideMenuOpen && (
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 700,
-              color: "#ffffff",
-              letterSpacing: "0.5px",
-              flex: 1,
-              textAlign: "center",
-            }}
-          >
-            FLUXEN
-          </Typography>
+        {sideMenuOpen ? (
+          <>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={logoClaro}
+                alt="FLUXEN"
+                style={{
+                  maxWidth: "100%",
+                  height: "auto",
+                  maxHeight: "80px",
+                  objectFit: "contain",
+                }}
+              />
+            </Box>
+            <Tooltip title="Recolher menu">
+              <IconButton
+                onClick={handleToggleMenu}
+                sx={{
+                  color: "#ffffff",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                  },
+                  minWidth: 40,
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        ) : (
+          <Tooltip title="Expandir menu">
+            <IconButton
+              onClick={handleToggleMenu}
+              sx={{
+                color: "#ffffff",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                },
+                minWidth: 40,
+                width: 40,
+                height: 40,
+              }}
+            >
+                <MenuIcon />
+              </IconButton>
+            </Tooltip>
         )}
-        <Tooltip title={sideMenuOpen ? "Recolher menu" : "Expandir menu"}>
-          <IconButton
-            onClick={handleToggleMenu}
-            sx={{
-              color: "#ffffff",
-              "&:hover": {
-                backgroundColor: "rgba(255,255,255,0.1)",
-              },
-              minWidth: 40,
-              width: 40,
-              height: 40,
-            }}
-          >
-            {sideMenuOpen ? <ChevronLeftIcon /> : <MenuIcon />}
-          </IconButton>
-        </Tooltip>
       </Box>
 
       {/* Informações do usuário */}
@@ -265,6 +294,27 @@ export default function SideMenu() {
         })}
       </List>
 
+      {!sideMenuOpen && (
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderTop: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <img
+            src={logoVertical}
+            alt="FLUXEN"
+            style={{
+              height: "120px",
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      )}
+
       <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
 
       {/* Botão de Logout */}
@@ -308,6 +358,7 @@ export default function SideMenu() {
           </Tooltip>
         </ListItem>
       </List>
+
     </Box>
   );
 }
