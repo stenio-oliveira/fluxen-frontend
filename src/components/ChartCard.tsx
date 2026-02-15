@@ -323,6 +323,11 @@ const ChartCard: React.FC<ChartCardProps> = ({
       metadata: chartData.metadata,
     };
 
+    // Configurar cutout para gráfico de rosca (aumenta o buraco interno, deixando o anel mais fino)
+    if (chartType === 'doughnut') {
+      chartOptions.cutout = '75%'; // Aumenta o buraco interno, deixando o anel mais fino
+    }
+
     // Configurar eixo Y para gráficos de linha e barra usando valor_maximo e valor_minimo
     if ((chartType === 'line' || chartType === 'bar') && chartData.metadata.maxValue !== undefined && chartData.metadata.minValue !== undefined) {
       chartOptions.scales = {
@@ -331,6 +336,20 @@ const ChartCard: React.FC<ChartCardProps> = ({
           max: chartData.metadata.maxValue,
           ticks: {
             stepSize: (chartData.metadata.maxValue - chartData.metadata.minValue) / 10,
+          },
+        },
+        x: {
+          ticks: {
+            display: fullscreenOpen, // Mostrar timestamp apenas em tela cheia
+          },
+        },
+      };
+    } else if ((chartType === 'line' || chartType === 'bar')) {
+      // Mesmo sem valor_maximo e valor_minimo, ocultar timestamp quando não estiver em tela cheia
+      chartOptions.scales = {
+        x: {
+          ticks: {
+            display: fullscreenOpen, // Mostrar timestamp apenas em tela cheia
           },
         },
       };
@@ -351,8 +370,6 @@ const ChartCard: React.FC<ChartCardProps> = ({
   return (
     <Card
       sx={{
-        maxHeight: '400px',
-        maxWidth: '250px',
         height: '100%',
         width: '100%',
         boxShadow: '0px 6px 18px rgba(0,0,0,0.06)',
@@ -373,8 +390,8 @@ const ChartCard: React.FC<ChartCardProps> = ({
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 1 }}>
         {/* Cabeçalho com nome e ID do equipamento */}
         <Box sx={{ 
-          mb: 0.75,
-          pb: 0.5, 
+          mb: 0.1,
+          pb: 0.1, 
           borderBottom: '1px solid rgba(0,0,0,0.08)',
           display: 'flex',
           justifyContent: 'space-between',
@@ -552,9 +569,9 @@ const ChartCard: React.FC<ChartCardProps> = ({
         {/* Gráfico ou estados de loading/erro */}
         <Box sx={{
           flex: 1,
-          minHeight: chartType === 'doughnut' ? '180px' : '140px',
-          maxHeight: chartType === 'doughnut' ? '180px' : '140px',
-          position: 'relative'
+          minHeight: chartType === 'doughnut' ? '170px' : '170px',
+          maxHeight: chartType === 'doughnut' ? '170px' : '170px',
+          position: 'relative',
         }}>
           {loading && !chartData ? (
             <Box

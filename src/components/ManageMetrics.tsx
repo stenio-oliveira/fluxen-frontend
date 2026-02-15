@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import MetricaService from "../services/metricaService";
 import { setFeedback } from "../redux/slices/feedBackSlice";
-import { Typography, Box, Dialog, Divider, Stack, IconButton, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import { Typography, Box, Dialog, Divider, Stack, IconButton, Tooltip, useMediaQuery, useTheme, Switch, FormControlLabel } from "@mui/material";
 import type { Metrica } from "../types/Metrica";
 import type { Option } from "../types/Option";
 import OptionsField from "./shared/OptionsField";
@@ -35,6 +35,8 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
     alarme_minimo: null,
     alarme_maximo: null
   });
+  const [enableAlarmeMinimo, setEnableAlarmeMinimo] = React.useState<boolean>(false);
+  const [enableAlarmeMaximo, setEnableAlarmeMaximo] = React.useState<boolean>(false);
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [metricOptions, setMetricOptions] = React.useState<Option[]>([]);
   const [selectedMetric, setSelectedMetric] = React.useState<Metrica | null>( null);
@@ -81,6 +83,8 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
         alarme_minimo: null,
         alarme_maximo: null
       });
+      setEnableAlarmeMinimo(false);
+      setEnableAlarmeMaximo(false);
       setValidationErrors({});
       fetchMetricsCallback();
     };
@@ -111,9 +115,11 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
       }
     }
 
-    // Validar alarme mínimo (opcional, mas se fornecido, deve estar dentro da faixa)
-    if (formData.alarme_minimo !== null && formData.alarme_minimo !== undefined) {
-      if (formData.alarme_minimo < 0) {
+    // Validar alarme mínimo (apenas se o toggle estiver ativado)
+    if (enableAlarmeMinimo) {
+      if (formData.alarme_minimo === null || formData.alarme_minimo === undefined) {
+        errors.alarme_minimo = 'Alarme mínimo é obrigatório quando ativado';
+      } else if (formData.alarme_minimo < 0) {
         errors.alarme_minimo = 'Alarme mínimo não pode ser negativo';
       } else if (formData.valor_minimo !== undefined && formData.alarme_minimo < formData.valor_minimo) {
         errors.alarme_minimo = 'Alarme mínimo não pode ser menor que o valor mínimo';
@@ -122,9 +128,11 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
       }
     }
 
-    // Validar alarme máximo (opcional, mas se fornecido, deve estar dentro da faixa)
-    if (formData.alarme_maximo !== null && formData.alarme_maximo !== undefined) {
-      if (formData.alarme_maximo < 0) {
+    // Validar alarme máximo (apenas se o toggle estiver ativado)
+    if (enableAlarmeMaximo) {
+      if (formData.alarme_maximo === null || formData.alarme_maximo === undefined) {
+        errors.alarme_maximo = 'Alarme máximo é obrigatório quando ativado';
+      } else if (formData.alarme_maximo < 0) {
         errors.alarme_maximo = 'Alarme máximo não pode ser negativo';
       } else if (formData.valor_minimo !== undefined && formData.alarme_maximo < formData.valor_minimo) {
         errors.alarme_maximo = 'Alarme máximo não pode ser menor que o valor mínimo';
@@ -133,8 +141,9 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
       }
     }
 
-    // Validar se alarme mínimo e máximo são consistentes
-    if (formData.alarme_minimo !== null && formData.alarme_minimo !== undefined &&
+    // Validar se alarme mínimo e máximo são consistentes (apenas se ambos estiverem ativados)
+    if (enableAlarmeMinimo && enableAlarmeMaximo &&
+      formData.alarme_minimo !== null && formData.alarme_minimo !== undefined &&
         formData.alarme_maximo !== null && formData.alarme_maximo !== undefined) {
       if (formData.alarme_minimo >= formData.alarme_maximo) {
         errors.alarme_maximo = 'Alarme máximo deve ser maior que o alarme mínimo';
@@ -184,6 +193,38 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
     }
   };
 
+  const handleAlarmeMinimoToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = e.target.checked;
+    setEnableAlarmeMinimo(enabled);
+    if (!enabled) {
+      setFormData({ ...formData, alarme_minimo: null });
+      // Limpar erro de validação do alarme mínimo
+      if (validationErrors.alarme_minimo) {
+        setValidationErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.alarme_minimo;
+          return newErrors;
+        });
+      }
+    }
+  };
+
+  const handleAlarmeMaximoToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = e.target.checked;
+    setEnableAlarmeMaximo(enabled);
+    if (!enabled) {
+      setFormData({ ...formData, alarme_maximo: null });
+      // Limpar erro de validação do alarme máximo
+      if (validationErrors.alarme_maximo) {
+        setValidationErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.alarme_maximo;
+          return newErrors;
+        });
+      }
+    }
+  };
+
   const handleAlarmeMinimoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === '' ? null : Number(e.target.value);
     setFormData({ ...formData, alarme_minimo: value });
@@ -218,8 +259,20 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
   }, []);
 
   const   handleAddMetric = async () => {
+    // Garantir que valores sejam null se os toggles estiverem desativados
+    const dataToSend = {
+      ...formData,
+      alarme_minimo: enableAlarmeMinimo ? formData.alarme_minimo : null,
+      alarme_maximo: enableAlarmeMaximo ? formData.alarme_maximo : null,
+    };
+
     // Validar formulário antes de adicionar
-    if (!validateFormData()) {
+    const tempFormData = formData;
+    setFormData(dataToSend);
+    const isValid = validateFormData();
+    setFormData(tempFormData);
+
+    if (!isValid) {
       dispatch(
         setFeedback({
           message: "Por favor, corrija os erros nos valores",
@@ -248,7 +301,7 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
         const associadetMetric = await MetricaService.associateMetricToEquipamento(
           metricId, 
           Number(id),
-          formData
+          dataToSend
         );        
 
         setAssociatedMetrics([...associatedMetrics, associadetMetric]);
@@ -290,8 +343,20 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
 
     const handleUpdateEquipamentoMetrica = async (
     ) => {
+      // Garantir que valores sejam null se os toggles estiverem desativados
+      const dataToSend = {
+        ...formData,
+        alarme_minimo: enableAlarmeMinimo ? formData.alarme_minimo : null,
+        alarme_maximo: enableAlarmeMaximo ? formData.alarme_maximo : null,
+      };
+
       // Validar formulário antes de atualizar
-      if (!validateFormData()) {
+      const tempFormData = formData;
+      setFormData(dataToSend);
+      const isValid = validateFormData();
+      setFormData(tempFormData);
+
+      if (!isValid) {
         dispatch(
           setFeedback({
             message: "Por favor, corrija os erros nos valores",
@@ -304,11 +369,13 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
       try {
           await MetricaService.updateEquipamentoMetrica(
           editingEquipamentoMetrica?.id || 0,
-          formData
+            dataToSend
         );
         
         setEditingEquipamentoMetrica(null);
         resetMetrics();
+        // Recarregar métricas associadas para refletir as mudanças
+        await fetchMetricsCallback();
       } catch (e: any) {
         dispatch(
           setFeedback({
@@ -447,10 +514,17 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
                               ? metric.equipamento_metrica
                               : null
                           );
+                          const equipamentoMetrica = metric.equipamento_metrica;
+                          const hasAlarmeMinimo = equipamentoMetrica?.alarme_minimo != null;
+                          const hasAlarmeMaximo = equipamentoMetrica?.alarme_maximo != null;
                           setFormData({
-                            valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
-                            valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
-                          });
+                          valor_minimo: equipamentoMetrica?.valor_minimo || 0,
+                          valor_maximo: equipamentoMetrica?.valor_maximo || 0,
+                          alarme_minimo: equipamentoMetrica?.alarme_minimo ?? null,
+                          alarme_maximo: equipamentoMetrica?.alarme_maximo ?? null,
+                        });
+                          setEnableAlarmeMinimo(hasAlarmeMinimo);
+                          setEnableAlarmeMaximo(hasAlarmeMaximo);
                         }}
                       />
                       <DeleteButton onClick={() => handleDeleteMetric(metric)} />
@@ -575,17 +649,20 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
                     <EditButton
                       onClick={() => {
                         console.log("metric", metric);
+                        const equipamentoMetrica = metric.equipamento_metrica;
                         setEditingEquipamentoMetrica(
-                          metric.equipamento_metrica
-                            ? metric.equipamento_metrica
+                          equipamentoMetrica
+                            ? equipamentoMetrica
                             : null
                         );
                         setFormData({
-                          valor_minimo: metric.equipamento_metrica?.valor_minimo || 0,
-                          valor_maximo: metric.equipamento_metrica?.valor_maximo || 0,
-                          alarme_minimo: metric.equipamento_metrica?.alarme_minimo ?? null,
-                          alarme_maximo: metric.equipamento_metrica?.alarme_maximo ?? null,
+                          valor_minimo: equipamentoMetrica?.valor_minimo || 0,
+                          valor_maximo: equipamentoMetrica?.valor_maximo || 0,
+                          alarme_minimo: equipamentoMetrica?.alarme_minimo ?? null,
+                          alarme_maximo: equipamentoMetrica?.alarme_maximo ?? null,
                         });
+                        setEnableAlarmeMinimo(equipamentoMetrica?.alarme_minimo != null);
+                        setEnableAlarmeMaximo(equipamentoMetrica?.alarme_maximo != null);
                       }}
                     />
                   </>
@@ -675,31 +752,61 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
             )}
           </Box>
           <Box>
-            <Input
-              label="Alarme Mínimo (opcional)"
-              type="number"
-              value={formData.alarme_minimo ?? ''}
-              onChange={handleAlarmeMinimoChange}
-              helperText="Valor abaixo do qual o alarme será disparado"
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={enableAlarmeMinimo}
+                  onChange={handleAlarmeMinimoToggle}
+                  color="primary"
+                />
+              }
+              label="Ativar Alarme Mínimo"
+              sx={{ mb: enableAlarmeMinimo ? 1 : 0 }}
             />
-            {validationErrors.alarme_minimo && (
-              <span className="mt-1 text-xs text-red-500">
-                {validationErrors.alarme_minimo}
-              </span>
+            {enableAlarmeMinimo && (
+              <>
+                <Input
+                  label="Alarme Mínimo"
+                  type="number"
+                  value={formData.alarme_minimo ?? ''}
+                  onChange={handleAlarmeMinimoChange}
+                  helperText="Valor abaixo do qual o alarme será disparado"
+                />
+                {validationErrors.alarme_minimo && (
+                  <span className="mt-1 text-xs text-red-500">
+                    {validationErrors.alarme_minimo}
+                  </span>
+                )}
+              </>
             )}
           </Box>
           <Box>
-            <Input
-              label="Alarme Máximo (opcional)"
-              type="number"
-              value={formData.alarme_maximo ?? ''}
-              onChange={handleAlarmeMaximoChange}
-              helperText="Valor acima do qual o alarme será disparado"
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={enableAlarmeMaximo}
+                  onChange={handleAlarmeMaximoToggle}
+                  color="primary"
+                />
+              }
+              label="Ativar Alarme Máximo"
+              sx={{ mb: enableAlarmeMaximo ? 1 : 0 }}
             />
-            {validationErrors.alarme_maximo && (
-              <span className="mt-1 text-xs text-red-500">
-                {validationErrors.alarme_maximo}
-              </span>
+            {enableAlarmeMaximo && (
+              <>
+                <Input
+                  label="Alarme Máximo"
+                  type="number"
+                  value={formData.alarme_maximo ?? ''}
+                  onChange={handleAlarmeMaximoChange}
+                  helperText="Valor acima do qual o alarme será disparado"
+                />
+                {validationErrors.alarme_maximo && (
+                  <span className="mt-1 text-xs text-red-500">
+                    {validationErrors.alarme_maximo}
+                  </span>
+                )}
+              </>
             )}
           </Box>
           <BaseButton onClick={( ) => { 
@@ -714,6 +821,8 @@ const ManageMetrics: React.FC<ManageMetricsProps> = ({ disabled = false }) => {
             setFormDataDialogOpen(false);
             setEditingEquipamentoMetrica(null);
             setValidationErrors({});
+            setEnableAlarmeMinimo(false);
+            setEnableAlarmeMaximo(false);
           }}>Cancelar</BaseCancelButton>
         </Box>
       </Dialog>

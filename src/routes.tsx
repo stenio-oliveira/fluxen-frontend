@@ -11,6 +11,7 @@ import EquipamentoLogsPage from './pages/EquipamentoLogsPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import SupportPage from './pages/SupportPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
@@ -63,6 +64,11 @@ const AppRoutes: React.FC = () => {
       <Route path="/metricas" element={
         <ProtectedRoute requiredRole="ADM">
           <MetricasPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/suporte" element={
+        <ProtectedRoute>
+          <SupportPage />
         </ProtectedRoute>
       } />
 

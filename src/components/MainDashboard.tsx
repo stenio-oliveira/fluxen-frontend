@@ -1,6 +1,5 @@
 import {
   Box,
-  Grid,
   Typography,
   Button,
   CircularProgress,
@@ -125,8 +124,8 @@ const Dashboard = () => {
     >
       {/* Header */}
       <Box sx={{
-        px: { xs: 1.5, md: 2 },
-        py: { xs: 0.75, md: 1 },
+        px: { xs: 1, md: 1.5 },
+        py: { xs: 0.5, md: 0.75 },
         flexShrink: 0,
         backgroundColor: 'white',
         borderBottom: '1px solid rgba(0,0,0,0.08)',
@@ -139,7 +138,7 @@ const Dashboard = () => {
           flexWrap: {
             xs: 'wrap',
           },
-          gap: 1.5
+          gap: 1
          }}>
           <Box>
             <Typography
@@ -147,26 +146,26 @@ const Dashboard = () => {
               fontWeight="bold"
               sx={{ 
                 color: '#00204a',
-                fontSize: { xs: '0.95rem', md: '1rem' },
+                fontSize: { xs: '0.85rem', md: '0.9rem' },
                 lineHeight: 1.2,
               }}
             >
               Dashboard de Monitoramento
             </Typography>
-            <Typography
+            {/* <Typography
               variant="body2"
               sx={{
                 color: '#00204a',
-                fontSize: { xs: '0.75rem', md: '0.8rem' },
+                fontSize: { xs: '0.7rem', md: '0.75rem' },
                 fontWeight: 500,
-                mt: 0.25,
+                mt: 0.15,
                 opacity: 0.8,
               }}
             >
               Meus Equipamentos Monitorados
-            </Typography>
+            </Typography> */}
           </Box>
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Tooltip title="Notificações">
               <IconButton
                 onClick={() => setNotificacoesDrawerOpen(true)}
@@ -174,6 +173,7 @@ const Dashboard = () => {
                 sx={{ 
                   position: 'relative',
                   color: 'text.primary',
+                  padding: '4px',
                   '&:hover': {
                     backgroundColor: 'rgba(26, 35, 126, 0.08)',
                     color: 'primary.main',
@@ -188,13 +188,14 @@ const Dashboard = () => {
             <Button
               variant="contained"
               size="small"
-              startIcon={<SettingsIcon />}
+              startIcon={<SettingsIcon fontSize="small" />}
               onClick={() => setSelectorOpen(true)}
               sx={{
                 backgroundColor: '#1FB6D5',
-                fontSize: '0.75rem',
-                py: 0.5,
-                px: 1.5,
+                fontSize: '0.7rem',
+                py: 0.4,
+                px: 1,
+                minHeight: '28px',
                 '&:hover': {
                   backgroundColor: '#1599B8',
                 },
@@ -355,12 +356,26 @@ const Dashboard = () => {
                   },
                 }}
               >
-                <Grid container spacing={0.2} justifyContent="center">
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '6px',
+                    justifyContent: 'flex-start',
+                    alignItems: 'flex-start',
+                  }}
+                >
                   {dashboardEquipamentos.map((dashboardItem) => (
-                    <Grid
+                    <Box
                       key={dashboardItem.id}
-                      size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}
-                      sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                      sx={{
+                        minWidth: '200px',
+                        height: '290px',
+                        flex: '1 1 auto',
+                        maxWidth: '200px',
+                     
+                        display: 'flex',
+                      }}
                     >
                       <ChartCard
                         equipamentoId={dashboardItem.id_equipamento}
@@ -370,9 +385,9 @@ const Dashboard = () => {
                         initialTipoGraficoId={dashboardItem.id_tipo_grafico || undefined}
                         onTipoGraficoChange={fetchDashboardEquipamentos}
                       />
-                    </Grid>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
           </Box>
         )}
       </Box>

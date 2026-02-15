@@ -1,3 +1,4 @@
+import  { useEffect, useRef, useCallback } from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
@@ -14,6 +15,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import SupportIcon from "@mui/icons-material/Support";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
 import { logout } from "../../redux/slices/userSlice";
@@ -62,6 +64,11 @@ export default function SideMenu() {
       icon: <AnalyticsIcon />,
       adminOnly: true, // Apenas para ADM
     },
+    {
+      name: "Suporte",
+      link: "/suporte",
+      icon: <SupportIcon />,
+    },
   ];
 
   // Filtrar links baseado no perfil do usuário
@@ -88,6 +95,66 @@ export default function SideMenu() {
     dispatch(toggleSideMenu());
   };
 
+  // Refs para rastrear interação e timers
+  const lastInteractionRef = useRef<number>(Date.now());
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const menuBoxRef = useRef<HTMLDivElement>(null);
+
+  // Função para atualizar timestamp da última interação
+  const updateLastInteraction = useCallback(() => {
+    lastInteractionRef.current = Date.now();
+  }, []);
+
+  // Função para abrir o menu quando houver mouseover
+  const handleMouseEnter = useCallback(() => {
+    if (!sideMenuOpen) {
+      dispatch(toggleSideMenu());
+    }
+    updateLastInteraction();
+  }, [sideMenuOpen, dispatch, updateLastInteraction]);
+
+  // useEffect para configurar verificação de inatividade a cada 1 minuto
+  useEffect(() => {
+    // Função para verificar inatividade e recolher o menu
+    const checkInactivity = () => {
+      const now = Date.now();
+      const timeSinceLastInteraction = now - lastInteractionRef.current;
+      const oneMinute = 60 * 1000; // 1 minuto em milissegundos
+
+      // Se passou 1 minuto sem interação e o menu está aberto, recolher
+      if (timeSinceLastInteraction >= oneMinute && sideMenuOpen) {
+        dispatch(toggleSideMenu());
+      }
+    };
+
+    // Verificar inatividade a cada 1 minuto
+    inactivityTimerRef.current = setInterval(checkInactivity, 60000);
+
+    // Event listeners para rastrear interações
+    const handleUserInteraction = () => {
+      updateLastInteraction();
+    };
+
+    // Adicionar listeners para vários tipos de interação
+    window.addEventListener('mousedown', handleUserInteraction);
+    window.addEventListener('mousemove', handleUserInteraction);
+    window.addEventListener('keydown', handleUserInteraction);
+    window.addEventListener('click', handleUserInteraction);
+    window.addEventListener('scroll', handleUserInteraction);
+
+    // Cleanup
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearInterval(inactivityTimerRef.current);
+      }
+      window.removeEventListener('mousedown', handleUserInteraction);
+      window.removeEventListener('mousemove', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('scroll', handleUserInteraction);
+    };
+  }, [sideMenuOpen, dispatch, updateLastInteraction]);
+
   // Se não houver usuário, não mostrar sidebar
   if (!user) {
     return null;
@@ -95,6 +162,10 @@ export default function SideMenu() {
 
   return (
     <Box
+      ref={menuBoxRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseMove={updateLastInteraction}
+      onClick={updateLastInteraction}
       sx={{
         position: "fixed",
         left: 0,
@@ -114,14 +185,14 @@ export default function SideMenu() {
       {/* Logo/Header */}
       <Box
         sx={{
-          p: sideMenuOpen ? 2 : 1,
+          p: sideMenuOpen ? 1 : 0.5,
           borderBottom: "1px solid rgba(255,255,255,0.1)",
-          minHeight: sideMenuOpen ? "80px" : "auto",
+          minHeight: sideMenuOpen ? "50px" : "auto",
           display: "flex",
           flexDirection: sideMenuOpen ? "row" : "column",
           alignItems: "center",
           justifyContent: sideMenuOpen ? "space-between" : "center",
-          gap: 1,
+          gap: 0.5,
         }}
       >
         {sideMenuOpen ? (
@@ -140,7 +211,7 @@ export default function SideMenu() {
                 style={{
                   maxWidth: "100%",
                   height: "auto",
-                  maxHeight: "80px",
+                  maxHeight: "40px",
                   objectFit: "contain",
                 }}
               />
@@ -148,17 +219,18 @@ export default function SideMenu() {
             <Tooltip title="Recolher menu">
               <IconButton
                 onClick={handleToggleMenu}
+                size="small"
                 sx={{
                   color: "#ffffff",
                   "&:hover": {
                     backgroundColor: "rgba(255,255,255,0.1)",
                   },
-                  minWidth: 40,
-                  width: 40,
-                  height: 40,
+                  minWidth: 32,
+                  width: 32,
+                  height: 32,
                 }}
               >
-                <ChevronLeftIcon />
+                <ChevronLeftIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </>
@@ -166,17 +238,18 @@ export default function SideMenu() {
           <Tooltip title="Expandir menu">
             <IconButton
               onClick={handleToggleMenu}
+                size="small"
               sx={{
                 color: "#ffffff",
                 "&:hover": {
                   backgroundColor: "rgba(255,255,255,0.1)",
                 },
-                minWidth: 40,
-                width: 40,
-                height: 40,
+                minWidth: 32,
+                width: 32,
+                height: 32,
               }}
             >
-                <MenuIcon />
+                <MenuIcon fontSize="small" />
               </IconButton>
             </Tooltip>
         )}
@@ -185,7 +258,7 @@ export default function SideMenu() {
       {/* Informações do usuário */}
       <Box
         sx={{
-          p: 2,
+          p: 1,
           borderBottom: "1px solid rgba(255,255,255,0.1)",
         }}
       >
@@ -193,14 +266,15 @@ export default function SideMenu() {
           display: "flex", 
           alignItems: "center", 
           justifyContent: sideMenuOpen ? "flex-start" : "center",
-          gap: 1.5 
+          gap: 1 
         }}>
           <Avatar
             sx={{
               bgcolor: "#42a5f5",
-              width: 40,
-              height: 40,
+              width: 32,
+              height: 32,
               flexShrink: 0,
+              fontSize: "0.875rem",
             }}
           >
             {user.nome.charAt(0).toUpperCase()}
@@ -221,6 +295,7 @@ export default function SideMenu() {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
+                  fontSize: "0.8rem",
                 }}
               >
                 {user.nome}
@@ -229,7 +304,7 @@ export default function SideMenu() {
                 variant="caption"
                 sx={{
                   color: "rgba(255,255,255,0.7)",
-                  fontSize: "0.75rem",
+                  fontSize: "0.65rem",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -244,17 +319,18 @@ export default function SideMenu() {
       </Box>
 
       {/* Menu Links */}
-      <List sx={{ flex: 1, overflowY: "auto", py: 1 }}>
+      <List sx={{ flex: 1, overflowY: "auto", py: 0.5 }}>
         {links.map((link) => {
           const isActive = location.pathname === link.link;
           return (
-            <ListItem key={link.link} disablePadding sx={{ mb: 0.5 }}>
+            <ListItem key={link.link} disablePadding sx={{ mb: 0.25 }}>
               <Tooltip title={!sideMenuOpen ? link.name : ""} placement="right">
                 <ListItemButton
                   onClick={() => handleNavigate(link.link)}
                   sx={{
-                    mx: 1,
-                    borderRadius: "8px",
+                    mx: 0.75,
+                    py: 0.75,
+                    borderRadius: "6px",
                     backgroundColor: isActive ? "#1FB6D5" : "transparent",
                     color: "#ffffff",
                     justifyContent: sideMenuOpen ? "flex-start" : "center",
@@ -271,8 +347,9 @@ export default function SideMenu() {
                   <ListItemIcon
                     sx={{
                       color: isActive ? "#ffffff" : "#ffffff",
-                      minWidth: sideMenuOpen ? 40 : 0,
+                      minWidth: sideMenuOpen ? 32 : 0,
                       justifyContent: "center",
+                      fontSize: "1.1rem",
                     }}
                   >
                     {link.icon}
@@ -282,7 +359,7 @@ export default function SideMenu() {
                       primary={link.name}
                       primaryTypographyProps={{
                         fontWeight: isActive ? 600 : 500,
-                        fontSize: "0.95rem",
+                        fontSize: "0.85rem",
                         color: "#ffffff",
                       }}
                     />
@@ -318,14 +395,15 @@ export default function SideMenu() {
       <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
 
       {/* Botão de Logout */}
-      <List sx={{ py: 1 }}>
+      <List sx={{ py: 0.5 }}>
         <ListItem disablePadding>
           <Tooltip title={!sideMenuOpen ? "Sair" : ""} placement="right">
             <ListItemButton
               onClick={handleLogout}
               sx={{
-                mx: 1,
-                borderRadius: "8px",
+                mx: 0.75,
+                py: 0.75,
+                borderRadius: "6px",
                 color: "#ffffff",
                 justifyContent: sideMenuOpen ? "flex-start" : "center",
                 "&:hover": {
@@ -338,18 +416,18 @@ export default function SideMenu() {
               <ListItemIcon
                 sx={{
                   color: "#ffffff",
-                  minWidth: sideMenuOpen ? 40 : 0,
+                  minWidth: sideMenuOpen ? 32 : 0,
                   justifyContent: "center",
                 }}
               >
-                <LogoutIcon />
+                <LogoutIcon fontSize="small" />
               </ListItemIcon>
               {sideMenuOpen && (
                 <ListItemText
                   primary="Sair"
                   primaryTypographyProps={{
                     fontWeight: 500,
-                    fontSize: "0.95rem",
+                    fontSize: "0.85rem",
                     color: "#ffffff",
                   }}
                 />
