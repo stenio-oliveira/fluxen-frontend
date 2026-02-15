@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Stack, Typography, FormControlLabel, Switch } from '@mui/material';
+import { Box, Stack, TextField, FormControlLabel, Switch } from '@mui/material';
 import Input from './shared/Input';
 import OptionsField from './shared/OptionsField';
 import SystemAnnouncementService from '../services/systemAnnouncementService';
@@ -150,7 +150,7 @@ const SystemAnnouncementForm = () => {
           type="text"
         />
 
-        <Input
+        <TextField
           value={formData.description}
           name="description"
           onChange={handleChange}
@@ -159,6 +159,8 @@ const SystemAnnouncementForm = () => {
           required
           multiline
           rows={4}
+          fullWidth
+          variant="outlined"
         />
 
         <OptionsField
