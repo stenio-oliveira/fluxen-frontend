@@ -12,7 +12,9 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import SupportPage from './pages/SupportPage';
+import SystemAnnouncementsPage from './pages/SystemAnnouncementsPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ContingencyBlocker from './components/ContingencyBlocker';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -36,24 +38,32 @@ const AppRoutes: React.FC = () => {
       {/* Rotas principais (protegidas) */}
       <Route path="/equipamentos" element={
         <ProtectedRoute>
-          <EquipamentosPage />
+          <ContingencyBlocker>
+            <EquipamentosPage />
+          </ContingencyBlocker>
         </ProtectedRoute>
       } />
       <Route path="/equipamentos/:id" element={
         <ProtectedRoute>
-          <EquipamentoDetailPage />
+          <ContingencyBlocker>
+            <EquipamentoDetailPage />
+          </ContingencyBlocker>
         </ProtectedRoute>
       } />
       <Route path="/equipamentos/:id/logs" element={
         <ProtectedRoute>
-          <EquipamentoLogsPage />
+          <ContingencyBlocker>
+            <EquipamentoLogsPage />
+          </ContingencyBlocker>
         </ProtectedRoute>
       } />
 
       {/* Rotas protegidas para ADM e gestores */}
       <Route path="/clientes" element={
         <ProtectedRoute requiredRole="ADM" allowManager={true}>
-          <ClientesPage />
+          <ContingencyBlocker>
+            <ClientesPage />
+          </ContingencyBlocker>
         </ProtectedRoute>
       } />
       <Route path="/usuarios" element={
@@ -63,12 +73,21 @@ const AppRoutes: React.FC = () => {
       } />
       <Route path="/metricas" element={
         <ProtectedRoute requiredRole="ADM">
-          <MetricasPage />
+          <ContingencyBlocker>
+            <MetricasPage />
+          </ContingencyBlocker>
         </ProtectedRoute>
       } />
       <Route path="/suporte" element={
         <ProtectedRoute>
-          <SupportPage />
+          <ContingencyBlocker>
+            <SupportPage />
+          </ContingencyBlocker>
+        </ProtectedRoute>
+      } />
+      <Route path="/anuncios" element={
+        <ProtectedRoute requiredRole="ADM">
+          <SystemAnnouncementsPage />
         </ProtectedRoute>
       } />
 

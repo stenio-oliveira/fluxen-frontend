@@ -7,6 +7,7 @@ import metricasTableReducer from './slices/metricasTableSlice';
 import metricasStatsReducer from './slices/metricasStatsSlice';
 import clientesTableReducer from './slices/clientesTableSlice';
 import usersTableReducer from './slices/usersTableSlice';
+import systemAnnouncementsTableReducer from './slices/systemAnnouncementsTableSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,7 +18,8 @@ export const store = configureStore({
     metricasTable: metricasTableReducer,
     metricasStats: metricasStatsReducer,
     clientesTable: clientesTableReducer,
-    usersTable: usersTableReducer
+    usersTable: usersTableReducer,
+    systemAnnouncementsTable: systemAnnouncementsTableReducer
   },
 });
 

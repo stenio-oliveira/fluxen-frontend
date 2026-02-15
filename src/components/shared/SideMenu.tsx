@@ -16,11 +16,13 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import SupportIcon from "@mui/icons-material/Support";
+import AnnouncementIcon from "@mui/icons-material/Campaign";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
 import { logout } from "../../redux/slices/userSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toggleSideMenu } from "../../redux/slices/sideMenuSlice";
+import { useSystemAnnouncement } from "../../hooks/useSystemAnnouncement";
 import logoClaro from "../../assets/logo-claro.png";
 import logoVertical from "../../assets/logo-vertical.png";
 
@@ -30,6 +32,7 @@ export default function SideMenu() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isContingency } = useSystemAnnouncement();
 
   // Verificar se o usuário é ADM ou gestor
   const isAdmin = user?.perfil_nome === 'ADM';
@@ -69,10 +72,22 @@ export default function SideMenu() {
       link: "/suporte",
       icon: <SupportIcon />,
     },
+    {
+      name: "Anúncios",
+      link: "/anuncios",
+      icon: <AnnouncementIcon />,
+      adminOnly: true, // Apenas para ADM
+    },
   ];
 
-  // Filtrar links baseado no perfil do usuário
+  // Filtrar links baseado no perfil do usuário e contingência
   const links = allLinks.filter(link => {
+    // Se houver contingência ativa E o usuário NÃO for administrador, mostrar apenas o Dashboard
+    if (isContingency && !isAdmin) {
+      return link.link === '/';
+    }
+    
+    // Filtros normais baseados no perfil
     if (link.adminOnly) {
       return isAdmin;
     }

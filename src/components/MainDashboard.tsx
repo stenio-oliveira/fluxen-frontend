@@ -25,6 +25,8 @@ import DashboardEquipamentosSelector from "./DashboardEquipamentosSelector";
 import ChartCard from "./ChartCard";
 import UsuarioEquipamentoDashboardService from "../services/usuarioEquipamentoDashboardService";
 import NotificacaoService from "../services/notificacaoService";
+import { useSystemAnnouncement } from "../hooks/useSystemAnnouncement";
+import SystemAnnouncementCard from "./SystemAnnouncementCard";
 import type { UsuarioEquipamentoDashboard } from "../types/UsuarioEquipamentoDashboard";
 import type { Notificacao } from "../types/Notificacao";
 
@@ -39,6 +41,7 @@ const Dashboard = () => {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [countNaoVisualizadas, setCountNaoVisualizadas] = useState(0);
   const [loadingNotificacoes, setLoadingNotificacoes] = useState(false);
+  const { activeAnnouncement, isContingency } = useSystemAnnouncement();
 
   // Carregar equipamentos do dashboard
   const fetchDashboardEquipamentos = useCallback(async () => {
@@ -307,7 +310,32 @@ const Dashboard = () => {
           pt: { xs: 1, md: 1 },
         }}
       >
-        {loadingEquipamentos ? (
+        {/* Exibir anúncio ativo se houver (apenas para não administradores) */}
+        {activeAnnouncement && user?.perfil_nome !== 'ADM' && (
+          <Box sx={{ mb: 2 }}>
+            <SystemAnnouncementCard announcement={activeAnnouncement} fullWidth />
+          </Box>
+        )}
+
+        {/* Se houver anúncio de contingência, não mostrar os gráficos (apenas para não administradores) */}
+        {isContingency && user?.perfil_nome !== 'ADM' ? (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            color: 'text.secondary',
+          }}>
+            <Typography variant="h6" sx={{ mb: 1, fontStyle: 'italic', textAlign: 'center' }}>
+              Sistema em modo de contingência
+            </Typography>
+            <Typography variant="body2" sx={{ textAlign: 'center', maxWidth: 600 }}>
+              O sistema está temporariamente indisponível devido a uma contingência. 
+              Por favor, verifique o anúncio acima para mais informações.
+            </Typography>
+          </Box>
+        ) : loadingEquipamentos ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
             <CircularProgress size={40} />
           </Box>
